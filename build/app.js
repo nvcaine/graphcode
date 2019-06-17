@@ -109,14 +109,13 @@ var Application = /** @class */ (function () {
     function Application() {
     }
     Application.prototype.run = function () {
-        console.log('# start');
+        console.log('# start new app');
         var canvasWrapper = new CanvasWrapper('app-canvas');
         var userInterface = new UserInterface('app-interface');
         console.log('# exit');
     };
     return Application;
 }());
-/// <reference path="classes/Application.ts" />
 var app = new Application();
 app.run();
 //# sourceMappingURL=app.js.map
