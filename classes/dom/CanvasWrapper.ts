@@ -1,20 +1,30 @@
 /// <reference path="../messaging/MessagingManager.ts" />
 /// <reference path="../canvas/CanvasAPI.ts" />
+/// <reference path="../canvas/ClassCanvasAPI.ts" />
 
 class CanvasWrapper {
 
-    private canvas:HTMLDivElement;
+    private appCanvas: HTMLDivElement;
+    private classCanvas: HTMLDivElement;
+
+    private appCanvasAPI: CanvasAPI;
+    private classCanvasAPI: ClassCanvasAPI;
 
     public constructor( canvasElementId: string ) {
 
-        this.canvas = <HTMLDivElement> document.getElementById( canvasElementId );
+        this.appCanvas = <HTMLDivElement> document.getElementById( canvasElementId );
+        this.classCanvas = <HTMLDivElement> document.getElementById( 'class-canvas' );
+        this.classCanvas.hidden = true;
 
         let domRect: ClientRect = document.body.getBoundingClientRect();
 
-        this.canvas.style.width = domRect.width + 'px';
-        this.canvas.style.height = domRect.height + 'px';
+        this.appCanvas.style.width = this.classCanvas.style.width = domRect.width + 'px';
+        this.appCanvas.style.height = this.classCanvas.style.height = domRect.height + 'px';
 
-        console.log( '## Canvas initialized: ' + this.canvas.style.width + ' ' + this.canvas.style.height );
+        console.log( '## Canvas initialized: ' + this.appCanvas.style.width + ' ' + this.appCanvas.style.height );
+
+        this.appCanvasAPI = new CanvasAPI( this.appCanvas );
+        this.classCanvasAPI = new ClassCanvasAPI( this.classCanvas );
 
         this.initMessagingContainer();
     }
@@ -23,14 +33,26 @@ class CanvasWrapper {
         let messagingManager: MessagingManager = MessagingManager.getInstance();
 
         messagingManager.onMessage( 'add-class', this.addClass.bind( this ) );
+        messagingManager.onMessage( 'open-class', this.openClass.bind( this ) );
+        messagingManager.onMessage( 'close-class', this.closeClass.bind( this ) );
     }
 
     private addClass( messageData: any ) {
 
-        console.log( 'received:' + messageData );
+        this.appCanvasAPI.addClass( messageData, 100, 100 );
+    }
 
-        let canvasAPI: CanvasAPI = new CanvasAPI( this.canvas );
+    private openClass( classData: ClassData ) {
 
-        canvasAPI.drawClass( messageData, 100, 100 );
+        this.appCanvas.hidden = true;
+        this.classCanvas.hidden = false;
+
+        this.classCanvasAPI.openClass( classData );
+    }
+
+    private closeClass( messageData: any ) {
+
+        this.appCanvas.hidden = false;
+        this.classCanvas.hidden = true;
     }
 }

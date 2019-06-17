@@ -1,3 +1,5 @@
+/// <reference path="data/ClassData.ts" />
+
 class CanvasAPI {
 
     private canvas: HTMLDivElement;
@@ -5,6 +7,8 @@ class CanvasAPI {
     private canvasOffsetY: number;
     private targetOffsetX: number;
     private targetOffsetY: number;
+
+    private classes: Array<ClassData> = [];
 
     public constructor( canvas: HTMLDivElement ) {
 
@@ -18,7 +22,17 @@ class CanvasAPI {
         this.canvasOffsetY = rect.top;
     }
 
-    public drawClass( className: string, x: number, y: number ) {
+    /**
+     * Create a div element and append it to the canvas
+     * @param className 
+     * @param x 
+     * @param y 
+     */
+    public addClass( className: string, x: number, y: number ) {
+
+        let classData: ClassData = new ClassData( className, x, y );
+
+        this.classes.push( classData );
 
         let classContainer: HTMLDivElement = document.createElement( 'div' );
 
@@ -26,28 +40,49 @@ class CanvasAPI {
         classContainer.style.left = x + 'px';
         classContainer.style.position = 'absolute';
         classContainer.style.border = '1px solid black';
+        classContainer.style.height = '50px';
+        classContainer.style.width = '150px';
         classContainer.innerText = className;
 
+        // maybe wrap this behaviour
         classContainer.draggable = true;
         classContainer.ondragstart = this.startDragClass.bind( this );
-        classContainer.ondragend = this.dragClass.bind( this );
+        classContainer.ondragend = this.dragClass.bind( this, classData );
+
+        classContainer.ondblclick = this.openClass.bind( this, classData );
 
         this.canvas.appendChild( classContainer );
     }
 
     private startDragClass( event: DragEvent ) {
+
         event.stopPropagation();
-        let targetRect: ClientRect = ( <HTMLDivElement> event.target ).getBoundingClientRect();
+
+        let div: HTMLDivElement = <HTMLDivElement> event.target;
+        let targetRect: ClientRect = div.getBoundingClientRect();
+
         this.targetOffsetX = event.pageX - targetRect.left;
         this.targetOffsetY = event.pageY - targetRect.top;
+
     }
 
-    private dragClass( event: DragEvent ) {
+    private dragClass( classData: ClassData, event: DragEvent ) {
 
         event.stopPropagation();
+
         let div: HTMLDivElement = <HTMLDivElement> event.target;
 
-        div.style.left = ( event.pageX - this.canvasOffsetX - this.targetOffsetX ) + 'px'
-        div.style.top = ( event.pageY - this.canvasOffsetY - this.targetOffsetY ) + 'px';
+        classData.x = ( event.pageX - this.canvasOffsetX - this.targetOffsetX );
+        classData.y = ( event.pageY - this.canvasOffsetY - this.targetOffsetY );
+        div.style.left = classData.x + 'px';
+        div.style.top = classData.y + 'px';
+    }
+
+    private openClass( classData: ClassData, event: DragEvent ) {
+
+        let messagingManager: MessagingManager = MessagingManager.getInstance();
+        let target: HTMLDivElement = <HTMLDivElement> event.target;
+
+        messagingManager.sendMessage( 'open-class', classData );
     }
 }
