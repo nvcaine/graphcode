@@ -50,10 +50,8 @@ var ClassData = /** @class */ (function () {
     }
     return ClassData;
 }());
-/// <reference path="data/ClassData.ts" />
-var CanvasAPI = /** @class */ (function () {
-    function CanvasAPI(canvas) {
-        this.classes = [];
+var AbstractCanvasAPI = /** @class */ (function () {
+    function AbstractCanvasAPI(canvas) {
         this.canvas = canvas;
         this.canvas.ondragover = function (event) {
             event.preventDefault();
@@ -61,6 +59,17 @@ var CanvasAPI = /** @class */ (function () {
         var rect = this.canvas.getBoundingClientRect();
         this.canvasOffsetX = rect.left;
         this.canvasOffsetY = rect.top;
+    }
+    return AbstractCanvasAPI;
+}());
+/// <reference path="data/ClassData.ts" />
+/// <reference path="AbstractCanvasAPI.ts" />
+var CanvasAPI = /** @class */ (function (_super) {
+    __extends(CanvasAPI, _super);
+    function CanvasAPI() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.classes = [];
+        return _this;
     }
     /**
      * Create a div element and append it to the canvas
@@ -81,23 +90,23 @@ var CanvasAPI = /** @class */ (function () {
         classContainer.innerText = className;
         // maybe wrap this behaviour
         classContainer.draggable = true;
-        classContainer.ondragstart = this.startDragClass.bind(this);
+        classContainer.ondragstart = this.startDragClass.bind(this, classData);
         classContainer.ondragend = this.dragClass.bind(this, classData);
         classContainer.ondblclick = this.openClass.bind(this, classData);
         this.canvas.appendChild(classContainer);
     };
-    CanvasAPI.prototype.startDragClass = function (event) {
+    CanvasAPI.prototype.startDragClass = function (classData, event) {
         event.stopPropagation();
         var div = event.target;
         var targetRect = div.getBoundingClientRect();
-        this.targetOffsetX = event.pageX - targetRect.left;
-        this.targetOffsetY = event.pageY - targetRect.top;
+        classData.mouseOffsetX = event.pageX - targetRect.left;
+        classData.mouseOffsetY = event.pageY - targetRect.top - 21;
     };
     CanvasAPI.prototype.dragClass = function (classData, event) {
         event.stopPropagation();
         var div = event.target;
-        classData.x = (event.pageX - this.canvasOffsetX - this.targetOffsetX);
-        classData.y = (event.pageY - this.canvasOffsetY - this.targetOffsetY);
+        classData.x = (event.pageX - this.canvasOffsetX - classData.mouseOffsetX);
+        classData.y = (event.pageY - this.canvasOffsetY - classData.mouseOffsetY);
         div.style.left = classData.x + 'px';
         div.style.top = classData.y + 'px';
     };
@@ -107,19 +116,7 @@ var CanvasAPI = /** @class */ (function () {
         messagingManager.sendMessage('open-class', classData);
     };
     return CanvasAPI;
-}());
-var AbstractCanvasAPI = /** @class */ (function () {
-    function AbstractCanvasAPI(canvas) {
-        this.canvas = canvas;
-        this.canvas.ondragover = function (event) {
-            event.preventDefault();
-        };
-        var rect = this.canvas.getBoundingClientRect();
-        this.canvasOffsetX = rect.left;
-        this.canvasOffsetY = rect.top;
-    }
-    return AbstractCanvasAPI;
-}());
+}(AbstractCanvasAPI));
 /// <reference path="AbstractCanvasAPI.ts" />
 var ClassCanvasAPI = /** @class */ (function (_super) {
     __extends(ClassCanvasAPI, _super);

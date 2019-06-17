@@ -1,26 +1,9 @@
 /// <reference path="data/ClassData.ts" />
+/// <reference path="AbstractCanvasAPI.ts" />
 
-class CanvasAPI {
-
-    private canvas: HTMLDivElement;
-    private canvasOffsetX: number;
-    private canvasOffsetY: number;
-    private targetOffsetX: number;
-    private targetOffsetY: number;
+class CanvasAPI extends AbstractCanvasAPI {
 
     private classes: Array<ClassData> = [];
-
-    public constructor( canvas: HTMLDivElement ) {
-
-        this.canvas = canvas;
-        this.canvas.ondragover = function ( event: DragEvent ) {
-            event.preventDefault();
-        };
-
-        let rect: ClientRect = this.canvas.getBoundingClientRect();
-        this.canvasOffsetX = rect.left;
-        this.canvasOffsetY = rect.top;
-    }
 
     /**
      * Create a div element and append it to the canvas
@@ -46,7 +29,7 @@ class CanvasAPI {
 
         // maybe wrap this behaviour
         classContainer.draggable = true;
-        classContainer.ondragstart = this.startDragClass.bind( this );
+        classContainer.ondragstart = this.startDragClass.bind( this, classData );
         classContainer.ondragend = this.dragClass.bind( this, classData );
 
         classContainer.ondblclick = this.openClass.bind( this, classData );
@@ -54,16 +37,15 @@ class CanvasAPI {
         this.canvas.appendChild( classContainer );
     }
 
-    private startDragClass( event: DragEvent ) {
+    private startDragClass( classData: ClassData, event: DragEvent ) {
 
         event.stopPropagation();
 
         let div: HTMLDivElement = <HTMLDivElement> event.target;
         let targetRect: ClientRect = div.getBoundingClientRect();
 
-        this.targetOffsetX = event.pageX - targetRect.left;
-        this.targetOffsetY = event.pageY - targetRect.top;
-
+        classData.mouseOffsetX = event.pageX - targetRect.left;
+        classData.mouseOffsetY = event.pageY - targetRect.top - 21;
     }
 
     private dragClass( classData: ClassData, event: DragEvent ) {
@@ -72,8 +54,8 @@ class CanvasAPI {
 
         let div: HTMLDivElement = <HTMLDivElement> event.target;
 
-        classData.x = ( event.pageX - this.canvasOffsetX - this.targetOffsetX );
-        classData.y = ( event.pageY - this.canvasOffsetY - this.targetOffsetY );
+        classData.x = ( event.pageX - this.canvasOffsetX - classData.mouseOffsetX );
+        classData.y = ( event.pageY - this.canvasOffsetY - classData.mouseOffsetY );
         div.style.left = classData.x + 'px';
         div.style.top = classData.y + 'px';
     }
@@ -81,7 +63,6 @@ class CanvasAPI {
     private openClass( classData: ClassData, event: DragEvent ) {
 
         let messagingManager: MessagingManager = MessagingManager.getInstance();
-        let target: HTMLDivElement = <HTMLDivElement> event.target;
 
         messagingManager.sendMessage( 'open-class', classData );
     }
