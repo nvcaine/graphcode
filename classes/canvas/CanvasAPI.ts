@@ -1,53 +1,73 @@
-class CanvasAPI {
+/// <reference path="data/ClassData.ts" />
+/// <reference path="AbstractCanvasAPI.ts" />
 
-    private canvas: HTMLDivElement;
-    private canvasOffsetX: number;
-    private canvasOffsetY: number;
-    private targetOffsetX: number;
-    private targetOffsetY: number;
+class CanvasAPI extends AbstractCanvasAPI {
 
-    public constructor( canvas: HTMLDivElement ) {
+    private mouseOffsetData: Vector2;
 
-        this.canvas = canvas;
-        this.canvas.ondragover = function ( event: DragEvent ) {
-            event.preventDefault();
-        };
+    /**
+     * Create class canvas element and save it in the global collection.
+     * @param className 
+     * @param x 
+     * @param y 
+     */
+    public addClass( className: string, x: number, y: number ) {
 
-        let rect: ClientRect = this.canvas.getBoundingClientRect();
-        this.canvasOffsetX = rect.left;
-        this.canvasOffsetY = rect.top;
-    }
+        let classDataProxy: ClassDataProxy = ClassDataProxy.getInstance();
+        let classData: ClassData = classDataProxy.addClass( className, x, y );
+        let classContainer: HTMLDivElement = this.domHelper.createClassElement( x, y );
 
-    public drawClass( className: string, x: number, y: number ) {
-
-        let classContainer: HTMLDivElement = document.createElement( 'div' );
-
-        classContainer.style.top = y + 'px';
-        classContainer.style.left = x + 'px';
-        classContainer.style.position = 'absolute';
-        classContainer.style.border = '1px solid black';
         classContainer.innerText = className;
-
         classContainer.draggable = true;
         classContainer.ondragstart = this.startDragClass.bind( this );
-        classContainer.ondragend = this.dragClass.bind( this );
+        classContainer.ondragend = this.dropClass.bind( this, classData );
+        classContainer.ondblclick = this.openClass.bind( this, classData );
 
         this.canvas.appendChild( classContainer );
     }
 
+    /**
+     * Get the mouse offset relative to the event target's origin
+     * @param event 
+     */
     private startDragClass( event: DragEvent ) {
-        event.stopPropagation();
-        let targetRect: ClientRect = ( <HTMLDivElement> event.target ).getBoundingClientRect();
-        this.targetOffsetX = event.pageX - targetRect.left;
-        this.targetOffsetY = event.pageY - targetRect.top;
+
+        let div: HTMLDivElement = <HTMLDivElement> event.target,
+            targetRect: ClientRect = div.getBoundingClientRect();
+
+        // !! magic number
+        this.mouseOffsetData = new Vector2( event.pageX - targetRect.left, event.pageY - targetRect.top - 21 );
     }
 
-    private dragClass( event: DragEvent ) {
+    /**
+     * Update target coordinate on canvas and update the object data
+     * @param classData the object passed to the handler when creating a new class object
+     * @param event
+     */
+    private dropClass( classData: ClassData, event: DragEvent ) {
 
-        event.stopPropagation();
+        event.preventDefault();
+
         let div: HTMLDivElement = <HTMLDivElement> event.target;
+        let classDataProxy: ClassDataProxy = ClassDataProxy.getInstance();
 
-        div.style.left = ( event.pageX - this.canvasOffsetX - this.targetOffsetX ) + 'px'
-        div.style.top = ( event.pageY - this.canvasOffsetY - this.targetOffsetY ) + 'px';
+        classData.x = ( event.pageX - this.canvasOffset.x - this.mouseOffsetData.x );
+        classData.y = ( event.pageY - this.canvasOffset.y - this.mouseOffsetData.y );
+        classDataProxy.updateClass( classData );
+
+        div.style.left = classData.x + 'px';
+        div.style.top = classData.y + 'px';
+    }
+
+    /**
+     * Open the double-clicked class
+     * @param classData the object passed to the handler when creating a new class object
+     * @param event 
+     */
+    private openClass( classData: ClassData, event: MouseEvent ) {
+
+        let messagingManager: MessagingManager = MessagingManager.getInstance();
+
+        messagingManager.sendMessage( 'open-class', classData );
     }
 }

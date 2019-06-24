@@ -2,11 +2,23 @@
     <head></head>
 
     <body>
-        <div id="app-interface">
-            <button id="interface-add-class">Add class</button>
+
+        <div id="interface-wrapper">
+            <div id="app-interface">
+                <button id="interface-add-class">Add class</button>
+            </div>
+            <div id="class-interface">
+                <button id="interface-back">Back</button>
+                <span id="interface-class-name"></span>
+                <button id="interface-class-add-property">Add property</button>
+                <button id="interface-class-add-method">Add method</button>
+            </div>
         </div>
 
-        <div id="app-canvas" style="position:relative;"></div>
+        <div id="canvas-wrapper">
+            <div id="app-canvas" style="position:relative;"></div>
+            <div id="class-canvas" style="position:relative;"></div>
+        </div>
     </body>
 
     <script src="build/app.js"></script>
