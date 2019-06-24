@@ -3,58 +3,68 @@
 
 class CanvasAPI extends AbstractCanvasAPI {
 
-    private classes: Array<ClassData> = [];
+    private mouseOffsetData: Vector2;
 
     /**
-     * Create a div element and append it to the canvas
+     * Create class canvas element and save it in the global collection.
      * @param className 
      * @param x 
      * @param y 
      */
     public addClass( className: string, x: number, y: number ) {
 
-        // !! wrap the data in a proxy (based on rest methods)
-        let classData: ClassData = new ClassData( className, x, y );
-
-        this.classes.push( classData );
-
-        let classContainer: HTMLDivElement = this.domHelper.createClassElement( 100, 100 );
+        let classDataProxy: ClassDataProxy = ClassDataProxy.getInstance();
+        let classData: ClassData = classDataProxy.addClass( className, x, y );
+        let classContainer: HTMLDivElement = this.domHelper.createClassElement( x, y );
 
         classContainer.innerText = className;
         classContainer.draggable = true;
-        classContainer.ondragstart = this.startDragClass.bind( this, classData );
-        classContainer.ondragend = this.dragClass.bind( this, classData );
-
+        classContainer.ondragstart = this.startDragClass.bind( this );
+        classContainer.ondragend = this.dropClass.bind( this, classData );
         classContainer.ondblclick = this.openClass.bind( this, classData );
 
         this.canvas.appendChild( classContainer );
     }
 
-    private startDragClass( classData: ClassData, event: DragEvent ) {
+    /**
+     * Get the mouse offset relative to the event target's origin
+     * @param event 
+     */
+    private startDragClass( event: DragEvent ) {
 
-        event.stopPropagation();
+        let div: HTMLDivElement = <HTMLDivElement> event.target,
+            targetRect: ClientRect = div.getBoundingClientRect();
 
-        let div: HTMLDivElement = <HTMLDivElement> event.target;
-        let targetRect: ClientRect = div.getBoundingClientRect();
-
-        // !! cheap trick - find a better way to pass the mouse offset
-        classData.mouseOffsetX = event.pageX - targetRect.left;
-        classData.mouseOffsetY = event.pageY - targetRect.top - 21;
+        // !! magic number
+        this.mouseOffsetData = new Vector2( event.pageX - targetRect.left, event.pageY - targetRect.top - 21 );
     }
 
-    private dragClass( classData: ClassData, event: DragEvent ) {
+    /**
+     * Update target coordinate on canvas and update the object data
+     * @param classData the object passed to the handler when creating a new class object
+     * @param event
+     */
+    private dropClass( classData: ClassData, event: DragEvent ) {
 
-        event.stopPropagation();
+        event.preventDefault();
 
         let div: HTMLDivElement = <HTMLDivElement> event.target;
+        let classDataProxy: ClassDataProxy = ClassDataProxy.getInstance();
 
-        classData.x = ( event.pageX - this.canvasOffsetX - classData.mouseOffsetX );
-        classData.y = ( event.pageY - this.canvasOffsetY - classData.mouseOffsetY );
+        classData.x = ( event.pageX - this.canvasOffset.x - this.mouseOffsetData.x );
+        classData.y = ( event.pageY - this.canvasOffset.y - this.mouseOffsetData.y );
+        classDataProxy.updateClass( classData );
+
         div.style.left = classData.x + 'px';
         div.style.top = classData.y + 'px';
     }
 
-    private openClass( classData: ClassData, event: DragEvent ) {
+    /**
+     * Open the double-clicked class
+     * @param classData the object passed to the handler when creating a new class object
+     * @param event 
+     */
+    private openClass( classData: ClassData, event: MouseEvent ) {
 
         let messagingManager: MessagingManager = MessagingManager.getInstance();
 

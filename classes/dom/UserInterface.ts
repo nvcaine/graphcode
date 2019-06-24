@@ -22,8 +22,8 @@ class UserInterface {
     private initializeContainer() {
 
         // !! use a dictionary for constants
-        let addClassButton: HTMLButtonElement = <HTMLButtonElement> document.getElementById( 'interface-add-class' );
-        let backButton: HTMLButtonElement = <HTMLButtonElement> document.getElementById( 'interface-back' );
+        let addClassButton: HTMLButtonElement = <HTMLButtonElement> document.getElementById( 'interface-add-class' ),
+            backButton: HTMLButtonElement = <HTMLButtonElement> document.getElementById( 'interface-back' );
 
         addClassButton.onclick = this.addClickHandler.bind( this );
         backButton.onclick = this.backClickHandler.bind( this );

@@ -32,10 +32,10 @@ class DOMHelper {
 
     private createDivElement( style: any ): HTMLDivElement {
 
-        let result: HTMLDivElement = document.createElement( 'div' );
+        let result: HTMLDivElement = document.createElement( 'div' ),
+            keys: string[] = Object.keys( style );
 
-        let keys:string[] = Object.keys( style );
-        keys.map( ( value ) => {
+            keys.map( ( value ) => {
             result.style[value] = style[value];
         } );
 
