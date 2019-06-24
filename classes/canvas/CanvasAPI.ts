@@ -13,21 +13,14 @@ class CanvasAPI extends AbstractCanvasAPI {
      */
     public addClass( className: string, x: number, y: number ) {
 
+        // !! wrap the data in a proxy (based on rest methods)
         let classData: ClassData = new ClassData( className, x, y );
 
         this.classes.push( classData );
 
-        let classContainer: HTMLDivElement = document.createElement( 'div' );
+        let classContainer: HTMLDivElement = this.domHelper.createClassElement( 100, 100 );
 
-        classContainer.style.top = y + 'px';
-        classContainer.style.left = x + 'px';
-        classContainer.style.position = 'absolute';
-        classContainer.style.border = '1px solid black';
-        classContainer.style.height = '50px';
-        classContainer.style.width = '150px';
         classContainer.innerText = className;
-
-        // maybe wrap this behaviour
         classContainer.draggable = true;
         classContainer.ondragstart = this.startDragClass.bind( this, classData );
         classContainer.ondragend = this.dragClass.bind( this, classData );
@@ -44,6 +37,7 @@ class CanvasAPI extends AbstractCanvasAPI {
         let div: HTMLDivElement = <HTMLDivElement> event.target;
         let targetRect: ClientRect = div.getBoundingClientRect();
 
+        // !! cheap trick - find a better way to pass the mouse offset
         classData.mouseOffsetX = event.pageX - targetRect.left;
         classData.mouseOffsetY = event.pageY - targetRect.top - 21;
     }

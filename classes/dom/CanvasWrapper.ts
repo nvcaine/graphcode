@@ -35,11 +35,13 @@ class CanvasWrapper {
         messagingManager.onMessage( 'add-class', this.addClass.bind( this ) );
         messagingManager.onMessage( 'open-class', this.openClass.bind( this ) );
         messagingManager.onMessage( 'close-class', this.closeClass.bind( this ) );
+
+        messagingManager.onMessage( 'add-class-property', this.addClassProperty.bind( this ) );
     }
 
-    private addClass( messageData: any ) {
+    private addClass( className: any ) {
 
-        this.appCanvasAPI.addClass( messageData, 100, 100 );
+        this.appCanvasAPI.addClass( className, 100, 100 );
     }
 
     private openClass( classData: ClassData ) {
@@ -54,5 +56,11 @@ class CanvasWrapper {
 
         this.appCanvas.hidden = false;
         this.classCanvas.hidden = true;
+        this.classCanvasAPI.closeClass();
+    }
+
+    private addClassProperty( propertyName: any ) {
+        console.log( 'add class property' );
+        this.classCanvasAPI.addProperty( propertyName, 100, 100 );
     }
 }

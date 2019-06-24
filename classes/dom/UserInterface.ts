@@ -16,10 +16,12 @@ class UserInterface {
         this.messagingManager = MessagingManager.getInstance();
 
         this.initializeContainer();
+        this.initClassContainer();
     }
 
     private initializeContainer() {
 
+        // !! use a dictionary for constants
         let addClassButton: HTMLButtonElement = <HTMLButtonElement> document.getElementById( 'interface-add-class' );
         let backButton: HTMLButtonElement = <HTMLButtonElement> document.getElementById( 'interface-back' );
 
@@ -29,6 +31,13 @@ class UserInterface {
         this.messagingManager.onMessage( 'open-class', this.openClass.bind( this ) );
 
         console.log( '## Interface initalized' );
+    }
+
+    private initClassContainer() {
+
+        let addPropertyButton: HTMLButtonElement = <HTMLButtonElement> document.getElementById( 'interface-class-add-property' );
+
+        addPropertyButton.onclick = this.addPropertyClickHandler.bind( this );
     }
 
     private addClickHandler( e: MouseEvent ) {
@@ -42,7 +51,7 @@ class UserInterface {
 
         this.appInterface.hidden = true;
         this.classInterface.hidden = false;
-        this.renderClass(messageData);
+        this.renderClass( messageData );
     }
 
     private renderClass( classData: ClassData ) {
@@ -57,5 +66,10 @@ class UserInterface {
         this.messagingManager.sendMessage( 'close-class', undefined );
         this.appInterface.hidden = false;
         this.classInterface.hidden = true;
+    }
+
+    private addPropertyClickHandler( event: MouseEvent ) {
+        let propertyName: string = prompt( 'Enter property name', 'newProperty' );
+        this.messagingManager.sendMessage( 'add-class-property', propertyName );
     }
 }

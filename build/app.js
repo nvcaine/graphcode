@@ -50,6 +50,45 @@ var ClassData = /** @class */ (function () {
     }
     return ClassData;
 }());
+var DOMHelper = /** @class */ (function () {
+    function DOMHelper() {
+    }
+    DOMHelper.prototype.createClassElement = function (x, y) {
+        return this.createDivElement({
+            position: 'absolute',
+            border: '1px solid black',
+            height: '50px',
+            width: '150px',
+            top: y + 'px',
+            left: x + 'px'
+        });
+    };
+    DOMHelper.prototype.createPropertyElement = function (x, y) {
+        return this.createDivElement({
+            position: 'absolute',
+            border: '1px solid blue',
+            height: '50px',
+            width: '150px',
+            top: y + 'px',
+            left: x + 'px'
+        });
+    };
+    DOMHelper.prototype.removeAllChildren = function (element) {
+        while (element.lastChild) {
+            element.removeChild(element.lastChild);
+        }
+    };
+    DOMHelper.prototype.createDivElement = function (style) {
+        var result = document.createElement('div');
+        var keys = Object.keys(style);
+        keys.map(function (value) {
+            result.style[value] = style[value];
+        });
+        return result;
+    };
+    return DOMHelper;
+}());
+/// <reference path='../dom/DOMHelper.ts' />
 var AbstractCanvasAPI = /** @class */ (function () {
     function AbstractCanvasAPI(canvas) {
         this.canvas = canvas;
@@ -59,6 +98,7 @@ var AbstractCanvasAPI = /** @class */ (function () {
         var rect = this.canvas.getBoundingClientRect();
         this.canvasOffsetX = rect.left;
         this.canvasOffsetY = rect.top;
+        this.domHelper = new DOMHelper();
     }
     return AbstractCanvasAPI;
 }());
@@ -78,17 +118,11 @@ var CanvasAPI = /** @class */ (function (_super) {
      * @param y
      */
     CanvasAPI.prototype.addClass = function (className, x, y) {
+        // !! wrap the data in a proxy (based on rest methods)
         var classData = new ClassData(className, x, y);
         this.classes.push(classData);
-        var classContainer = document.createElement('div');
-        classContainer.style.top = y + 'px';
-        classContainer.style.left = x + 'px';
-        classContainer.style.position = 'absolute';
-        classContainer.style.border = '1px solid black';
-        classContainer.style.height = '50px';
-        classContainer.style.width = '150px';
+        var classContainer = this.domHelper.createClassElement(100, 100);
         classContainer.innerText = className;
-        // maybe wrap this behaviour
         classContainer.draggable = true;
         classContainer.ondragstart = this.startDragClass.bind(this, classData);
         classContainer.ondragend = this.dragClass.bind(this, classData);
@@ -99,6 +133,7 @@ var CanvasAPI = /** @class */ (function (_super) {
         event.stopPropagation();
         var div = event.target;
         var targetRect = div.getBoundingClientRect();
+        // !! cheap trick - find a better way to pass the mouse offset
         classData.mouseOffsetX = event.pageX - targetRect.left;
         classData.mouseOffsetY = event.pageY - targetRect.top - 21;
     };
@@ -112,7 +147,6 @@ var CanvasAPI = /** @class */ (function (_super) {
     };
     CanvasAPI.prototype.openClass = function (classData, event) {
         var messagingManager = MessagingManager.getInstance();
-        var target = event.target;
         messagingManager.sendMessage('open-class', classData);
     };
     return CanvasAPI;
@@ -124,6 +158,15 @@ var ClassCanvasAPI = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     ClassCanvasAPI.prototype.openClass = function (classData) {
+        console.log(classData);
+    };
+    ClassCanvasAPI.prototype.closeClass = function () {
+        this.domHelper.removeAllChildren(this.canvas);
+    };
+    ClassCanvasAPI.prototype.addProperty = function (propertyName, x, y) {
+        var propertyContainer = this.domHelper.createPropertyElement(100, 100);
+        propertyContainer.innerText = propertyName;
+        this.canvas.appendChild(propertyContainer);
     };
     return ClassCanvasAPI;
 }(AbstractCanvasAPI));
@@ -148,9 +191,10 @@ var CanvasWrapper = /** @class */ (function () {
         messagingManager.onMessage('add-class', this.addClass.bind(this));
         messagingManager.onMessage('open-class', this.openClass.bind(this));
         messagingManager.onMessage('close-class', this.closeClass.bind(this));
+        messagingManager.onMessage('add-class-property', this.addClassProperty.bind(this));
     };
-    CanvasWrapper.prototype.addClass = function (messageData) {
-        this.appCanvasAPI.addClass(messageData, 100, 100);
+    CanvasWrapper.prototype.addClass = function (className) {
+        this.appCanvasAPI.addClass(className, 100, 100);
     };
     CanvasWrapper.prototype.openClass = function (classData) {
         this.appCanvas.hidden = true;
@@ -160,6 +204,10 @@ var CanvasWrapper = /** @class */ (function () {
     CanvasWrapper.prototype.closeClass = function (messageData) {
         this.appCanvas.hidden = false;
         this.classCanvas.hidden = true;
+    };
+    CanvasWrapper.prototype.addClassProperty = function (propertyName) {
+        console.log('add class property');
+        this.classCanvasAPI.addProperty(propertyName, 100, 100);
     };
     return CanvasWrapper;
 }());
@@ -171,14 +219,20 @@ var UserInterface = /** @class */ (function () {
         this.classInterface.hidden = true;
         this.messagingManager = MessagingManager.getInstance();
         this.initializeContainer();
+        this.initClassContainer();
     }
     UserInterface.prototype.initializeContainer = function () {
+        // !! use a dictionary for constants
         var addClassButton = document.getElementById('interface-add-class');
         var backButton = document.getElementById('interface-back');
         addClassButton.onclick = this.addClickHandler.bind(this);
         backButton.onclick = this.backClickHandler.bind(this);
         this.messagingManager.onMessage('open-class', this.openClass.bind(this));
         console.log('## Interface initalized');
+    };
+    UserInterface.prototype.initClassContainer = function () {
+        var addPropertyButton = document.getElementById('interface-class-add-property');
+        addPropertyButton.onclick = this.addPropertyClickHandler.bind(this);
     };
     UserInterface.prototype.addClickHandler = function (e) {
         var newClassName = prompt('Enter class name', 'NewClass');
@@ -197,6 +251,10 @@ var UserInterface = /** @class */ (function () {
         this.messagingManager.sendMessage('close-class', undefined);
         this.appInterface.hidden = false;
         this.classInterface.hidden = true;
+    };
+    UserInterface.prototype.addPropertyClickHandler = function (event) {
+        var propertyName = prompt('Enter property name', 'newProperty');
+        this.messagingManager.sendMessage('add-class-property', propertyName);
     };
     return UserInterface;
 }());
