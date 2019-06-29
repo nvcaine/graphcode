@@ -59,7 +59,9 @@ var ClassData = /** @class */ (function () {
         if (this.properties === undefined) {
             this.properties = [];
         }
-        this.properties.push(new PropertyData(propertyName, x, y));
+        var newProperty = new PropertyData(propertyName, x, y);
+        this.properties.push(newProperty);
+        return newProperty;
     };
     return ClassData;
 }());
@@ -205,28 +207,69 @@ var ClassCanvasAPI = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     ClassCanvasAPI.prototype.openClass = function (classData) {
-        console.log(classData);
         this.currentClassData = classData;
-        this.renderClassData(classData);
+        this.renderClass(classData);
     };
+    /**
+     * Clear the class canvas when a class is closed.
+     */
     ClassCanvasAPI.prototype.closeClass = function () {
         this.domHelper.removeAllChildren(this.canvas);
     };
+    /**
+     * Add a property to the current class and render it on the canvas.
+     * @param propertyName the name of the propertyy
+     * @param x canvas coordinate X
+     * @param y canvas coordinate Y
+     */
     ClassCanvasAPI.prototype.addProperty = function (propertyName, x, y) {
-        var propertyContainer = this.domHelper.createPropertyElement(100, 100);
-        propertyContainer.innerText = propertyName;
-        this.canvas.appendChild(propertyContainer);
-        var classDataProxy = ClassDataProxy.getInstance();
-        this.currentClassData.addProperty(propertyName, x, y);
-        classDataProxy.updateClass(this.currentClassData);
+        var propertyData = this.addPropertyToClassData(propertyName, x, y);
+        this.renderProperty(propertyData);
     };
-    ClassCanvasAPI.prototype.renderClassData = function (classData) {
+    /**
+     * Add a property to the current class and update the class record.
+     * @param propertyName the name of the property
+     * @param x canvas coordinate X
+     * @param y canvas coordinate Y
+     * @returns a copy of the added property object
+     */
+    ClassCanvasAPI.prototype.addPropertyToClassData = function (propertyName, x, y) {
+        var newProperty = this.currentClassData.addProperty(propertyName, x, y);
+        ClassDataProxy.getInstance().updateClass(this.currentClassData);
+        return newProperty;
+    };
+    /**
+     * Render class to canvas. Display properties and methods;
+     * @param classData the class object
+     */
+    ClassCanvasAPI.prototype.renderClass = function (classData) {
         if (classData.properties !== undefined)
-            for (var i = 0, len = classData.properties.length; i < len; i++) {
-                var propertyContainer = this.domHelper.createPropertyElement(classData.properties[i].x, classData.properties[i].y);
-                propertyContainer.innerText = classData.properties[i].name;
-                this.canvas.appendChild(propertyContainer);
-            }
+            classData.properties.map(this.renderProperty, this);
+    };
+    ClassCanvasAPI.prototype.renderProperty = function (propertyData) {
+        var propertyContainer = this.domHelper.createPropertyElement(propertyData.x, propertyData.y);
+        propertyContainer.innerText = propertyData.name;
+        propertyContainer.draggable = true;
+        propertyContainer.ondragstart = this.startDragProperty.bind(this);
+        propertyContainer.ondragend = this.dropProperty.bind(this, propertyData);
+        this.canvas.appendChild(propertyContainer);
+    };
+    // !! dupes
+    ClassCanvasAPI.prototype.startDragProperty = function (event) {
+        var div = event.target, targetRect = div.getBoundingClientRect();
+        // !! magic number
+        this.mouseOffsetData = new Vector2(event.pageX - targetRect.left, event.pageY - targetRect.top - 21);
+    };
+    // !! dupes
+    ClassCanvasAPI.prototype.dropProperty = function (propertyData, event) {
+        event.preventDefault();
+        var div = event.target;
+        var classDataProxy = ClassDataProxy.getInstance();
+        propertyData.x = (event.pageX - this.canvasOffset.x - this.mouseOffsetData.x);
+        propertyData.y = (event.pageY - this.canvasOffset.y - this.mouseOffsetData.y);
+        classDataProxy.updateClass(this.currentClassData);
+        div.style.left = propertyData.x + 'px';
+        div.style.top = propertyData.y + 'px';
     };
     return ClassCanvasAPI;
 }(AbstractCanvasAPI));
@@ -237,13 +280,16 @@ var CanvasWrapper = /** @class */ (function () {
     function CanvasWrapper(canvasElementId) {
         this.appCanvas = document.getElementById(canvasElementId);
         this.classCanvas = document.getElementById('class-canvas');
-        this.classCanvas.hidden = true;
         var domRect = document.body.getBoundingClientRect();
         this.appCanvas.style.width = this.classCanvas.style.width = domRect.width + 'px';
         this.appCanvas.style.height = this.classCanvas.style.height = domRect.height + 'px';
+        this.appCanvas.style.position = this.classCanvas.style.position = 'relative;';
         console.log('## Canvas initialized: ' + this.appCanvas.style.width + ' ' + this.appCanvas.style.height);
         this.appCanvasAPI = new CanvasAPI(this.appCanvas);
+        this.appCanvas.hidden = true;
         this.classCanvasAPI = new ClassCanvasAPI(this.classCanvas);
+        this.classCanvas.hidden = true;
+        this.appCanvas.hidden = false;
         this.initMessagingContainer();
     }
     CanvasWrapper.prototype.initMessagingContainer = function () {
@@ -368,7 +414,6 @@ var ClassDataProxy = /** @class */ (function () {
         originalClassData.y = classData.y;
         originalClassData.properties = classData.properties;
         // also update properties and methods;
-        console.log(this.classes);
         return originalClassData.copy();
     };
     ClassDataProxy.prototype.getClassById = function (id) {

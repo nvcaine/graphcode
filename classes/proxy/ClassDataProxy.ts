@@ -40,7 +40,7 @@ class ClassDataProxy {
         originalClassData.y = classData.y;
         originalClassData.properties = classData.properties;
         // also update properties and methods;
-console.log(this.classes);
+
         return originalClassData.copy();
     }
 

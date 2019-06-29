@@ -31,11 +31,16 @@ class ClassData {
         return copy;
     }
 
-    public addProperty( propertyName: string, x: number, y: number ) {
+    public addProperty( propertyName: string, x: number, y: number ): PropertyData {
+
         if ( this.properties === undefined ) {
             this.properties = [];
         }
 
-        this.properties.push( new PropertyData( propertyName, x, y ) );
+        let newProperty: PropertyData = new PropertyData( propertyName, x, y );
+
+        this.properties.push( newProperty );
+
+        return newProperty;
     }
 }

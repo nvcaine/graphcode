@@ -14,17 +14,21 @@ class CanvasWrapper {
 
         this.appCanvas = <HTMLDivElement> document.getElementById( canvasElementId );
         this.classCanvas = <HTMLDivElement> document.getElementById( 'class-canvas' );
-        this.classCanvas.hidden = true;
 
         let domRect: ClientRect = document.body.getBoundingClientRect();
 
         this.appCanvas.style.width = this.classCanvas.style.width = domRect.width + 'px';
         this.appCanvas.style.height = this.classCanvas.style.height = domRect.height + 'px';
+        this.appCanvas.style.position = this.classCanvas.style.position = 'relative;'
 
         console.log( '## Canvas initialized: ' + this.appCanvas.style.width + ' ' + this.appCanvas.style.height );
 
         this.appCanvasAPI = new CanvasAPI( this.appCanvas );
+        this.appCanvas.hidden = true;
+
         this.classCanvasAPI = new ClassCanvasAPI( this.classCanvas );
+        this.classCanvas.hidden = true;
+        this.appCanvas.hidden = false;
 
         this.initMessagingContainer();
     }
