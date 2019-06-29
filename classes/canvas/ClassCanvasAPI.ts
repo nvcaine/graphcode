@@ -4,8 +4,6 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
 
     private currentClassData: ClassData;
 
-    private mouseOffsetData: Vector2;
-
     public openClass( classData: ClassData ) {
 
         this.currentClassData = classData;
@@ -29,6 +27,7 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
     public addProperty( propertyName: string, x: number, y: number ) {
 
         let propertyData: PropertyData = this.addPropertyToClassData( propertyName, x, y );
+
         this.renderProperty( propertyData );
     }
 
@@ -64,34 +63,19 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
 
         propertyContainer.innerText = propertyData.name;
         propertyContainer.draggable = true;
-        propertyContainer.ondragstart = this.startDragProperty.bind( this );
+        propertyContainer.ondragstart = this.onDragStart.bind( this );
         propertyContainer.ondragend = this.dropProperty.bind( this, propertyData );
 
         this.canvas.appendChild( propertyContainer );
     }
 
-    // !! dupes
-    private startDragProperty( event: DragEvent ) {
-        let div: HTMLDivElement = <HTMLDivElement> event.target,
-            targetRect: ClientRect = div.getBoundingClientRect();
-
-        // !! magic number
-        this.mouseOffsetData = new Vector2( event.pageX - targetRect.left, event.pageY - targetRect.top - 21 );
-    }
-
-    // !! dupes
     private dropProperty( propertyData: PropertyData, event: DragEvent ) {
 
-        event.preventDefault();
+        let position: Vector2 = this.onDragEnd( event ),
+            classDataProxy: ClassDataProxy = ClassDataProxy.getInstance();
 
-        let div: HTMLDivElement = <HTMLDivElement> event.target;
-        let classDataProxy: ClassDataProxy = ClassDataProxy.getInstance();
-
-        propertyData.x = ( event.pageX - this.canvasOffset.x - this.mouseOffsetData.x );
-        propertyData.y = ( event.pageY - this.canvasOffset.y - this.mouseOffsetData.y );
+        propertyData.x = position.x;
+        propertyData.y = position.y;
         classDataProxy.updateClass( this.currentClassData );
-
-        div.style.left = propertyData.x + 'px';
-        div.style.top = propertyData.y + 'px';
     }
 }

@@ -34,6 +34,7 @@ class CanvasWrapper {
     }
 
     private initMessagingContainer() {
+
         let messagingManager: MessagingManager = MessagingManager.getInstance();
 
         messagingManager.onMessage( 'add-class', this.addClass.bind( this ) );
@@ -64,7 +65,7 @@ class CanvasWrapper {
     }
 
     private addClassProperty( propertyName: any ) {
-        console.log( 'add class property' );
+
         this.classCanvasAPI.addProperty( propertyName, 100, 100 );
     }
 }
