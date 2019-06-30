@@ -35,9 +35,11 @@ class UserInterface {
 
     private initClassContainer() {
 
-        let addPropertyButton: HTMLButtonElement = <HTMLButtonElement> document.getElementById( 'interface-class-add-property' );
+        let addPropertyButton: HTMLButtonElement = <HTMLButtonElement> document.getElementById( 'interface-class-add-property' ),
+            addMethodButton: HTMLButtonElement = <HTMLButtonElement> document.getElementById( 'interface-class-add-method' );
 
         addPropertyButton.onclick = this.addPropertyClickHandler.bind( this );
+        addMethodButton.onclick = this.addMethodClickHandler.bind( this );
     }
 
     private addClickHandler( e: MouseEvent ) {
@@ -69,7 +71,16 @@ class UserInterface {
     }
 
     private addPropertyClickHandler( event: MouseEvent ) {
+
         let propertyName: string = prompt( 'Enter property name', 'newProperty' );
+
         this.messagingManager.sendMessage( 'add-class-property', propertyName );
+    }
+
+    private addMethodClickHandler( event: MouseEvent ) {
+
+        let methodName: string = prompt( 'Enter property name', 'newProperty' );
+
+        this.messagingManager.sendMessage( 'add-class-method', methodName );
     }
 }

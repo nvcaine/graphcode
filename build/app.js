@@ -63,6 +63,16 @@ var DOMHelper = /** @class */ (function () {
             left: x + 'px'
         });
     };
+    DOMHelper.prototype.createMethodElement = function (x, y) {
+        return this.createDivElement({
+            position: 'absolute',
+            border: '1px solid red',
+            height: '50px',
+            width: '150px',
+            top: y + 'px',
+            left: x + 'px'
+        });
+    };
     DOMHelper.prototype.removeAllChildren = function (element) {
         while (element.lastChild)
             element.removeChild(element.lastChild);
@@ -209,6 +219,10 @@ var ClassCanvasAPI = /** @class */ (function (_super) {
         var propertyData = this.addPropertyToClassData(propertyName, x, y);
         this.renderProperty(propertyData);
     };
+    ClassCanvasAPI.prototype.addMethod = function (methodName, x, y) {
+        var methodData = this.addMethodToClassData(methodName, x, y);
+        this.renderMethod(methodData);
+    };
     /**
      * Add a property to the current class and update the class record.
      * @param propertyName the name of the property
@@ -221,6 +235,11 @@ var ClassCanvasAPI = /** @class */ (function (_super) {
         ClassDataProxy.getInstance().updateClass(this.currentClassData);
         return newProperty;
     };
+    ClassCanvasAPI.prototype.addMethodToClassData = function (methodName, x, y) {
+        var newMethod = this.currentClassData.addMethod(methodName, x, y);
+        ClassDataProxy.getInstance().updateClass(this.currentClassData);
+        return newMethod;
+    };
     /**
      * Render class to canvas. Display properties and methods;
      * @param classData the class object
@@ -228,19 +247,29 @@ var ClassCanvasAPI = /** @class */ (function (_super) {
     ClassCanvasAPI.prototype.renderClass = function (classData) {
         if (classData.properties !== undefined)
             classData.properties.map(this.renderProperty, this);
+        if (classData.methods !== undefined)
+            classData.methods.map(this.renderMethod, this);
     };
     ClassCanvasAPI.prototype.renderProperty = function (propertyData) {
         var propertyContainer = this.domHelper.createPropertyElement(propertyData.x, propertyData.y);
         propertyContainer.innerText = propertyData.name;
         propertyContainer.draggable = true;
         propertyContainer.ondragstart = this.onDragStart.bind(this);
-        propertyContainer.ondragend = this.dropProperty.bind(this, propertyData);
+        propertyContainer.ondragend = this.dropElement.bind(this, propertyData);
         this.canvas.appendChild(propertyContainer);
     };
-    ClassCanvasAPI.prototype.dropProperty = function (propertyData, event) {
+    ClassCanvasAPI.prototype.renderMethod = function (methodData) {
+        var methodContainer = this.domHelper.createMethodElement(methodData.x, methodData.y);
+        methodContainer.innerText = methodData.name;
+        methodContainer.draggable = true;
+        methodContainer.ondragstart = this.onDragStart.bind(this);
+        methodContainer.ondragend = this.dropElement.bind(this, methodData);
+        this.canvas.appendChild(methodContainer);
+    };
+    ClassCanvasAPI.prototype.dropElement = function (elementData, event) {
         var position = this.onDragEnd(event), classDataProxy = ClassDataProxy.getInstance();
-        propertyData.x = position.x;
-        propertyData.y = position.y;
+        elementData.x = position.x;
+        elementData.y = position.y;
         classDataProxy.updateClass(this.currentClassData);
     };
     return ClassCanvasAPI;
@@ -276,6 +305,7 @@ var CanvasWrapper = /** @class */ (function () {
         messagingManager.onMessage('open-class', this.openClass.bind(this));
         messagingManager.onMessage('close-class', this.closeClass.bind(this));
         messagingManager.onMessage('add-class-property', this.addClassProperty.bind(this));
+        messagingManager.onMessage('add-class-method', this.addClassMethod.bind(this));
     };
     CanvasWrapper.prototype.addClass = function (className) {
         this.appCanvasAPI.addClass(className, 100, 100);
@@ -292,6 +322,9 @@ var CanvasWrapper = /** @class */ (function () {
     };
     CanvasWrapper.prototype.addClassProperty = function (propertyName) {
         this.classCanvasAPI.addProperty(propertyName, 100, 100);
+    };
+    CanvasWrapper.prototype.addClassMethod = function (methodName) {
+        this.classCanvasAPI.addMethod(methodName, 100, 100);
     };
     return CanvasWrapper;
 }());
@@ -325,6 +358,13 @@ var ClassData = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(ClassData.prototype, "methods", {
+        get: function () {
+            return this._methods;
+        },
+        enumerable: true,
+        configurable: true
+    });
     ClassData.prototype.copy = function () {
         var copy = new ClassData(this.name, this.x, this.y);
         copy._id = this._id;
@@ -335,7 +375,7 @@ var ClassData = /** @class */ (function (_super) {
         this.x = classData.x;
         this.y = classData.y;
         this._properties = classData._properties;
-        // also update methods;
+        this._methods = classData._methods;
     };
     ClassData.prototype.addProperty = function (propertyName, x, y) {
         if (this._properties === undefined) {
@@ -344,6 +384,14 @@ var ClassData = /** @class */ (function (_super) {
         var newProperty = new PropertyData(propertyName, x, y);
         this._properties.push(newProperty);
         return newProperty;
+    };
+    ClassData.prototype.addMethod = function (methodName, x, y) {
+        if (this._methods === undefined) {
+            this._methods = [];
+        }
+        var newMethod = new MethodData(methodName, x, y);
+        this._methods.push(newMethod);
+        return newMethod;
     };
     return ClassData;
 }(AbstractCanvasData));
@@ -366,8 +414,9 @@ var UserInterface = /** @class */ (function () {
         console.log('## Interface initalized');
     };
     UserInterface.prototype.initClassContainer = function () {
-        var addPropertyButton = document.getElementById('interface-class-add-property');
+        var addPropertyButton = document.getElementById('interface-class-add-property'), addMethodButton = document.getElementById('interface-class-add-method');
         addPropertyButton.onclick = this.addPropertyClickHandler.bind(this);
+        addMethodButton.onclick = this.addMethodClickHandler.bind(this);
     };
     UserInterface.prototype.addClickHandler = function (e) {
         var newClassName = prompt('Enter class name', 'NewClass');
@@ -391,6 +440,10 @@ var UserInterface = /** @class */ (function () {
         var propertyName = prompt('Enter property name', 'newProperty');
         this.messagingManager.sendMessage('add-class-property', propertyName);
     };
+    UserInterface.prototype.addMethodClickHandler = function (event) {
+        var methodName = prompt('Enter property name', 'newProperty');
+        this.messagingManager.sendMessage('add-class-method', methodName);
+    };
     return UserInterface;
 }());
 /// <reference path="dom/CanvasWrapper.ts" />
@@ -407,6 +460,15 @@ var Application = /** @class */ (function () {
     return Application;
 }());
 Application.run();
+var MethodData = /** @class */ (function (_super) {
+    __extends(MethodData, _super);
+    function MethodData(name, x, y) {
+        var _this = _super.call(this, name, x, y) || this;
+        _this.private = false;
+        return _this;
+    }
+    return MethodData;
+}(AbstractCanvasData));
 /// <reference path='AbstractCanvasData.ts' />
 var PropertyData = /** @class */ (function (_super) {
     __extends(PropertyData, _super);

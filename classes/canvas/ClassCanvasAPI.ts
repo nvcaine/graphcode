@@ -31,6 +31,13 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
         this.renderProperty( propertyData );
     }
 
+    public addMethod( methodName: string, x: number, y: number ) {
+
+        let methodData: MethodData = this.addMethodToClassData( methodName, x, y );
+
+        this.renderMethod( methodData );
+    }
+
     /**
      * Add a property to the current class and update the class record.
      * @param propertyName the name of the property
@@ -47,6 +54,14 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
         return newProperty;
     }
 
+    private addMethodToClassData( methodName: string, x: number, y: number ): MethodData {
+
+        let newMethod: MethodData = this.currentClassData.addMethod( methodName, x, y );
+
+        ClassDataProxy.getInstance().updateClass( this.currentClassData );
+
+        return newMethod;
+    }
     /**
      * Render class to canvas. Display properties and methods;
      * @param classData the class object
@@ -55,6 +70,9 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
 
         if ( classData.properties !== undefined )
             classData.properties.map( this.renderProperty, this );
+
+        if ( classData.methods !== undefined )
+            classData.methods.map( this.renderMethod, this );
     }
 
     private renderProperty( propertyData: PropertyData ) {
@@ -64,18 +82,30 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
         propertyContainer.innerText = propertyData.name;
         propertyContainer.draggable = true;
         propertyContainer.ondragstart = this.onDragStart.bind( this );
-        propertyContainer.ondragend = this.dropProperty.bind( this, propertyData );
+        propertyContainer.ondragend = this.dropElement.bind( this, propertyData );
 
         this.canvas.appendChild( propertyContainer );
     }
 
-    private dropProperty( propertyData: PropertyData, event: DragEvent ) {
+    private renderMethod( methodData: MethodData ) {
+
+        let methodContainer: HTMLDivElement = this.domHelper.createMethodElement( methodData.x, methodData.y );
+
+        methodContainer.innerText = methodData.name;
+        methodContainer.draggable = true;
+        methodContainer.ondragstart = this.onDragStart.bind( this );
+        methodContainer.ondragend = this.dropElement.bind( this, methodData );
+
+        this.canvas.appendChild( methodContainer );
+    }
+
+    private dropElement( elementData: AbstractCanvasData, event: DragEvent ) {
 
         let position: Vector2 = this.onDragEnd( event ),
             classDataProxy: ClassDataProxy = ClassDataProxy.getInstance();
 
-        propertyData.x = position.x;
-        propertyData.y = position.y;
+        elementData.x = position.x;
+        elementData.y = position.y;
         classDataProxy.updateClass( this.currentClassData );
     }
 }

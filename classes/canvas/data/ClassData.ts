@@ -4,6 +4,7 @@ class ClassData extends AbstractCanvasData {
 
     private _id: number;
     private _properties: PropertyData[];
+    private _methods: MethodData[];
 
     public constructor( name: string, x: number, y: number ) {
 
@@ -22,6 +23,11 @@ class ClassData extends AbstractCanvasData {
         return this._properties;
     }
 
+    public get methods(): MethodData[] {
+
+        return this._methods;
+    }
+
     public copy(): ClassData {
 
         let copy: ClassData = new ClassData( this.name, this.x, this.y );
@@ -37,7 +43,7 @@ class ClassData extends AbstractCanvasData {
         this.x = classData.x;
         this.y = classData.y;
         this._properties = classData._properties;
-        // also update methods;
+        this._methods = classData._methods;
     }
 
     public addProperty( propertyName: string, x: number, y: number ): PropertyData {
@@ -52,4 +58,18 @@ class ClassData extends AbstractCanvasData {
 
         return newProperty;
     }
+
+    public addMethod( methodName: string, x: number, y: number ): MethodData {
+
+        if ( this._methods === undefined ) {
+            this._methods = [];
+        }
+
+        let newMethod: MethodData = new MethodData( methodName, x, y );
+
+        this._methods.push( newMethod );
+
+        return newMethod;
+    }
+
 }

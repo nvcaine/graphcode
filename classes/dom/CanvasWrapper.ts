@@ -50,6 +50,7 @@ class CanvasWrapper {
         messagingManager.onMessage( 'close-class', this.closeClass.bind( this ) );
 
         messagingManager.onMessage( 'add-class-property', this.addClassProperty.bind( this ) );
+        messagingManager.onMessage( 'add-class-method', this.addClassMethod.bind( this ) );
     }
 
     private addClass( className: any ) {
@@ -75,5 +76,10 @@ class CanvasWrapper {
     private addClassProperty( propertyName: any ) {
 
         this.classCanvasAPI.addProperty( propertyName, 100, 100 );
+    }
+
+    private addClassMethod( methodName: any ) {
+
+        this.classCanvasAPI.addMethod( methodName, 100, 100 );
     }
 }
