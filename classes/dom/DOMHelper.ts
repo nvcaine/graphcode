@@ -25,9 +25,9 @@ class DOMHelper {
     }
 
     public removeAllChildren( element: HTMLDivElement ) {
-        while ( element.lastChild ) {
+
+        while ( element.lastChild )
             element.removeChild( element.lastChild );
-        }
     }
 
     private createDivElement( style: any ): HTMLDivElement {
@@ -35,7 +35,7 @@ class DOMHelper {
         let result: HTMLDivElement = document.createElement( 'div' ),
             keys: string[] = Object.keys( style );
 
-            keys.map( ( value ) => {
+        keys.map( ( value ) => {
             result.style[value] = style[value];
         } );
 

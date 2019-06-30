@@ -40,29 +40,6 @@ var MessagingManager = /** @class */ (function () {
     };
     return MessagingManager;
 }());
-var ClassData = /** @class */ (function () {
-    function ClassData(name, x, y) {
-        this.name = name;
-        this.x = x;
-        this.y = y;
-        this.id = +new Date;
-    }
-    ClassData.prototype.getId = function () {
-        return this.id;
-    };
-    ClassData.prototype.copy = function () {
-        var copy = new ClassData(this.name, this.x, this.y);
-        copy.id = this.id;
-        return copy;
-    };
-    ClassData.prototype.addProperty = function (propertyName, x, y) {
-        if (this.properties === undefined) {
-            this.properties = [];
-        }
-        this.properties.push(new PropertyData(propertyName, x, y));
-    };
-    return ClassData;
-}());
 var DOMHelper = /** @class */ (function () {
     function DOMHelper() {
     }
@@ -87,9 +64,8 @@ var DOMHelper = /** @class */ (function () {
         });
     };
     DOMHelper.prototype.removeAllChildren = function (element) {
-        while (element.lastChild) {
+        while (element.lastChild)
             element.removeChild(element.lastChild);
-        }
     };
     DOMHelper.prototype.createDivElement = function (style) {
         var result = document.createElement('div'), keys = Object.keys(style);
@@ -137,9 +113,29 @@ var AbstractCanvasAPI = /** @class */ (function () {
             event.preventDefault();
         };
     }
+    /**
+     * Save the mouse offset relative to the dragged element's origin.
+     * @param event
+     */
+    AbstractCanvasAPI.prototype.onDragStart = function (event) {
+        var div = event.target, targetRect = div.getBoundingClientRect();
+        this.mouseOffsetData = new Vector2(event.pageX - targetRect.left, event.pageY - targetRect.top - 21 // !! magic number
+        );
+    };
+    /**
+     * Update the position of the dragged element on the canvas.
+     * @param event
+     */
+    AbstractCanvasAPI.prototype.onDragEnd = function (event) {
+        event.preventDefault();
+        var div = event.target;
+        var result = new Vector2(event.pageX - this.canvasOffset.x - this.mouseOffsetData.x, event.pageY - this.canvasOffset.y - this.mouseOffsetData.y);
+        div.style.left = result.x + 'px';
+        div.style.top = result.y + 'px';
+        return result;
+    };
     return AbstractCanvasAPI;
 }());
-/// <reference path="data/ClassData.ts" />
 /// <reference path="AbstractCanvasAPI.ts" />
 var CanvasAPI = /** @class */ (function (_super) {
     __extends(CanvasAPI, _super);
@@ -153,24 +149,17 @@ var CanvasAPI = /** @class */ (function (_super) {
      * @param y
      */
     CanvasAPI.prototype.addClass = function (className, x, y) {
-        var classDataProxy = ClassDataProxy.getInstance();
-        var classData = classDataProxy.addClass(className, x, y);
-        var classContainer = this.domHelper.createClassElement(x, y);
-        classContainer.innerText = className;
+        var classDataProxy = ClassDataProxy.getInstance(), classData = classDataProxy.addClass(className, x, y);
+        this.renderClass(classData);
+    };
+    CanvasAPI.prototype.renderClass = function (classData) {
+        var classContainer = this.domHelper.createClassElement(classData.x, classData.y);
+        classContainer.innerText = classData.name;
         classContainer.draggable = true;
-        classContainer.ondragstart = this.startDragClass.bind(this);
+        classContainer.ondragstart = this.onDragStart.bind(this);
         classContainer.ondragend = this.dropClass.bind(this, classData);
         classContainer.ondblclick = this.openClass.bind(this, classData);
         this.canvas.appendChild(classContainer);
-    };
-    /**
-     * Get the mouse offset relative to the event target's origin
-     * @param event
-     */
-    CanvasAPI.prototype.startDragClass = function (event) {
-        var div = event.target, targetRect = div.getBoundingClientRect();
-        // !! magic number
-        this.mouseOffsetData = new Vector2(event.pageX - targetRect.left, event.pageY - targetRect.top - 21);
     };
     /**
      * Update target coordinate on canvas and update the object data
@@ -178,14 +167,10 @@ var CanvasAPI = /** @class */ (function (_super) {
      * @param event
      */
     CanvasAPI.prototype.dropClass = function (classData, event) {
-        event.preventDefault();
-        var div = event.target;
-        var classDataProxy = ClassDataProxy.getInstance();
-        classData.x = (event.pageX - this.canvasOffset.x - this.mouseOffsetData.x);
-        classData.y = (event.pageY - this.canvasOffset.y - this.mouseOffsetData.y);
+        var position = _super.prototype.onDragEnd.call(this, event), classDataProxy = ClassDataProxy.getInstance();
+        classData.x = position.x;
+        classData.y = position.y;
         classDataProxy.updateClass(classData);
-        div.style.left = classData.x + 'px';
-        div.style.top = classData.y + 'px';
     };
     /**
      * Open the double-clicked class
@@ -205,28 +190,58 @@ var ClassCanvasAPI = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     ClassCanvasAPI.prototype.openClass = function (classData) {
-        console.log(classData);
         this.currentClassData = classData;
-        this.renderClassData(classData);
+        this.renderClass(classData);
     };
+    /**
+     * Clear the class canvas when a class is closed.
+     */
     ClassCanvasAPI.prototype.closeClass = function () {
         this.domHelper.removeAllChildren(this.canvas);
     };
+    /**
+     * Add a property to the current class and render it on the canvas.
+     * @param propertyName the name of the propertyy
+     * @param x canvas coordinate X
+     * @param y canvas coordinate Y
+     */
     ClassCanvasAPI.prototype.addProperty = function (propertyName, x, y) {
-        var propertyContainer = this.domHelper.createPropertyElement(100, 100);
-        propertyContainer.innerText = propertyName;
-        this.canvas.appendChild(propertyContainer);
-        var classDataProxy = ClassDataProxy.getInstance();
-        this.currentClassData.addProperty(propertyName, x, y);
-        classDataProxy.updateClass(this.currentClassData);
+        var propertyData = this.addPropertyToClassData(propertyName, x, y);
+        this.renderProperty(propertyData);
     };
-    ClassCanvasAPI.prototype.renderClassData = function (classData) {
+    /**
+     * Add a property to the current class and update the class record.
+     * @param propertyName the name of the property
+     * @param x canvas coordinate X
+     * @param y canvas coordinate Y
+     * @returns a copy of the added property object
+     */
+    ClassCanvasAPI.prototype.addPropertyToClassData = function (propertyName, x, y) {
+        var newProperty = this.currentClassData.addProperty(propertyName, x, y);
+        ClassDataProxy.getInstance().updateClass(this.currentClassData);
+        return newProperty;
+    };
+    /**
+     * Render class to canvas. Display properties and methods;
+     * @param classData the class object
+     */
+    ClassCanvasAPI.prototype.renderClass = function (classData) {
         if (classData.properties !== undefined)
-            for (var i = 0, len = classData.properties.length; i < len; i++) {
-                var propertyContainer = this.domHelper.createPropertyElement(classData.properties[i].x, classData.properties[i].y);
-                propertyContainer.innerText = classData.properties[i].name;
-                this.canvas.appendChild(propertyContainer);
-            }
+            classData.properties.map(this.renderProperty, this);
+    };
+    ClassCanvasAPI.prototype.renderProperty = function (propertyData) {
+        var propertyContainer = this.domHelper.createPropertyElement(propertyData.x, propertyData.y);
+        propertyContainer.innerText = propertyData.name;
+        propertyContainer.draggable = true;
+        propertyContainer.ondragstart = this.onDragStart.bind(this);
+        propertyContainer.ondragend = this.dropProperty.bind(this, propertyData);
+        this.canvas.appendChild(propertyContainer);
+    };
+    ClassCanvasAPI.prototype.dropProperty = function (propertyData, event) {
+        var position = this.onDragEnd(event), classDataProxy = ClassDataProxy.getInstance();
+        propertyData.x = position.x;
+        propertyData.y = position.y;
+        classDataProxy.updateClass(this.currentClassData);
     };
     return ClassCanvasAPI;
 }(AbstractCanvasAPI));
@@ -234,18 +249,27 @@ var ClassCanvasAPI = /** @class */ (function (_super) {
 /// <reference path="../canvas/CanvasAPI.ts" />
 /// <reference path="../canvas/ClassCanvasAPI.ts" />
 var CanvasWrapper = /** @class */ (function () {
-    function CanvasWrapper(canvasElementId) {
+    function CanvasWrapper(canvasElementId, classCanvasElementId) {
+        this.initDOMElements(canvasElementId, classCanvasElementId);
+        this.initAPIs();
+        this.initMessagingContainer();
+    }
+    CanvasWrapper.prototype.initDOMElements = function (canvasElementId, classCanvasElementId) {
         this.appCanvas = document.getElementById(canvasElementId);
-        this.classCanvas = document.getElementById('class-canvas');
-        this.classCanvas.hidden = true;
+        this.classCanvas = document.getElementById(classCanvasElementId);
         var domRect = document.body.getBoundingClientRect();
         this.appCanvas.style.width = this.classCanvas.style.width = domRect.width + 'px';
         this.appCanvas.style.height = this.classCanvas.style.height = domRect.height + 'px';
+        this.appCanvas.style.position = this.classCanvas.style.position = 'relative;';
         console.log('## Canvas initialized: ' + this.appCanvas.style.width + ' ' + this.appCanvas.style.height);
+    };
+    CanvasWrapper.prototype.initAPIs = function () {
         this.appCanvasAPI = new CanvasAPI(this.appCanvas);
-        this.classCanvasAPI = new ClassCanvasAPI(this.classCanvas);
-        this.initMessagingContainer();
-    }
+        this.appCanvas.hidden = true; // hide the app canvas in order to correctly initalize the class canvas
+        this.classCanvasAPI = new ClassCanvasAPI(this.classCanvas); // correctly positioned for getting the offsets
+        this.classCanvas.hidden = true;
+        this.appCanvas.hidden = false;
+    };
     CanvasWrapper.prototype.initMessagingContainer = function () {
         var messagingManager = MessagingManager.getInstance();
         messagingManager.onMessage('add-class', this.addClass.bind(this));
@@ -267,11 +291,62 @@ var CanvasWrapper = /** @class */ (function () {
         this.classCanvasAPI.closeClass();
     };
     CanvasWrapper.prototype.addClassProperty = function (propertyName) {
-        console.log('add class property');
         this.classCanvasAPI.addProperty(propertyName, 100, 100);
     };
     return CanvasWrapper;
 }());
+var AbstractCanvasData = /** @class */ (function () {
+    function AbstractCanvasData(name, x, y) {
+        this.name = name;
+        this.x = x;
+        this.y = y;
+    }
+    return AbstractCanvasData;
+}());
+/// <reference path='AbstractCanvasData.ts' />
+var ClassData = /** @class */ (function (_super) {
+    __extends(ClassData, _super);
+    function ClassData(name, x, y) {
+        var _this = _super.call(this, name, x, y) || this;
+        _this._id = +new Date;
+        return _this;
+    }
+    Object.defineProperty(ClassData.prototype, "id", {
+        get: function () {
+            return this._id;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ClassData.prototype, "properties", {
+        get: function () {
+            return this._properties;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ClassData.prototype.copy = function () {
+        var copy = new ClassData(this.name, this.x, this.y);
+        copy._id = this._id;
+        return copy;
+    };
+    ClassData.prototype.update = function (classData) {
+        this.name = classData.name;
+        this.x = classData.x;
+        this.y = classData.y;
+        this._properties = classData._properties;
+        // also update methods;
+    };
+    ClassData.prototype.addProperty = function (propertyName, x, y) {
+        if (this._properties === undefined) {
+            this._properties = [];
+        }
+        var newProperty = new PropertyData(propertyName, x, y);
+        this._properties.push(newProperty);
+        return newProperty;
+    };
+    return ClassData;
+}(AbstractCanvasData));
 /// <reference path="../canvas/data/ClassData.ts" />
 var UserInterface = /** @class */ (function () {
     function UserInterface(domElementId) {
@@ -323,25 +398,25 @@ var UserInterface = /** @class */ (function () {
 var Application = /** @class */ (function () {
     function Application() {
     }
-    Application.prototype.run = function () {
+    Application.run = function () {
         console.log('# start new app');
-        var canvasWrapper = new CanvasWrapper('app-canvas');
+        var canvasWrapper = new CanvasWrapper('app-canvas', 'class-canvas');
         var userInterface = new UserInterface('app-interface');
         console.log('# exit');
     };
     return Application;
 }());
-var app = new Application();
-app.run();
-var PropertyData = /** @class */ (function () {
+Application.run();
+/// <reference path='AbstractCanvasData.ts' />
+var PropertyData = /** @class */ (function (_super) {
+    __extends(PropertyData, _super);
     function PropertyData(name, x, y) {
-        this.name = name;
-        this.x = x;
-        this.y = y;
-        this.private = false;
+        var _this = _super.call(this, name, x, y) || this;
+        _this.private = false;
+        return _this;
     }
     return PropertyData;
-}());
+}(AbstractCanvasData));
 /**
  * Controls access to the global classes data.
  */
@@ -362,18 +437,13 @@ var ClassDataProxy = /** @class */ (function () {
     };
     // put
     ClassDataProxy.prototype.updateClass = function (classData) {
-        var originalClassData = this.getClassById(classData.getId());
-        originalClassData.name = classData.name;
-        originalClassData.x = classData.x;
-        originalClassData.y = classData.y;
-        originalClassData.properties = classData.properties;
-        // also update properties and methods;
-        console.log(this.classes);
+        var originalClassData = this.getClassById(classData.id);
+        originalClassData.update(classData);
         return originalClassData.copy();
     };
     ClassDataProxy.prototype.getClassById = function (id) {
         for (var i = 0, len = this.classes.length; i < len; i++)
-            if (this.classes[i].getId() == id)
+            if (this.classes[i].id == id)
                 return this.classes[i];
         return null;
     };

@@ -4,8 +4,10 @@
 abstract class AbstractCanvasAPI {
 
     protected canvas: HTMLDivElement;
-    protected canvasOffset: Vector2;
     protected domHelper: DOMHelper;
+
+    private canvasOffset: Vector2;
+    private mouseOffsetData: Vector2;
 
     /**
      * Initialize the canvas offset and dom helper.
@@ -22,5 +24,40 @@ abstract class AbstractCanvasAPI {
         this.canvas.ondragover = function ( event: DragEvent ) {
             event.preventDefault();
         };
+    }
+
+    /**
+     * Save the mouse offset relative to the dragged element's origin.
+     * @param event
+     */
+    protected onDragStart( event: DragEvent ) {
+
+        let div: HTMLDivElement = <HTMLDivElement> event.target,
+            targetRect: ClientRect = div.getBoundingClientRect();
+
+        this.mouseOffsetData = new Vector2(
+            event.pageX - targetRect.left,
+            event.pageY - targetRect.top - 21 // !! magic number
+        );
+    }
+
+    /**
+     * Update the position of the dragged element on the canvas.
+     * @param event
+     */
+    protected onDragEnd( event: DragEvent ): Vector2 {
+
+        event.preventDefault();
+
+        let div: HTMLDivElement = <HTMLDivElement> event.target;
+        let result: Vector2 = new Vector2(
+            event.pageX - this.canvasOffset.x - this.mouseOffsetData.x,
+            event.pageY - this.canvasOffset.y - this.mouseOffsetData.y
+        );
+
+        div.style.left = result.x + 'px';
+        div.style.top = result.y + 'px';
+
+        return result;
     }
 }

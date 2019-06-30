@@ -3,11 +3,11 @@
 
 class Application {
 
-    public run() {
+    public static run() {
 
         console.log( '# start new app' );
 
-        let canvasWrapper: CanvasWrapper = new CanvasWrapper( 'app-canvas' );
+        let canvasWrapper: CanvasWrapper = new CanvasWrapper( 'app-canvas', 'class-canvas' );
         let userInterface: UserInterface = new UserInterface( 'app-interface' )
 
         console.log( '# exit' );
@@ -15,5 +15,4 @@ class Application {
     }
 }
 
-let app: Application = new Application();
-app.run();
+Application.run();

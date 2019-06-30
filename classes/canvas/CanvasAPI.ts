@@ -1,9 +1,6 @@
-/// <reference path="data/ClassData.ts" />
 /// <reference path="AbstractCanvasAPI.ts" />
 
 class CanvasAPI extends AbstractCanvasAPI {
-
-    private mouseOffsetData: Vector2;
 
     /**
      * Create class canvas element and save it in the global collection.
@@ -13,30 +10,23 @@ class CanvasAPI extends AbstractCanvasAPI {
      */
     public addClass( className: string, x: number, y: number ) {
 
-        let classDataProxy: ClassDataProxy = ClassDataProxy.getInstance();
-        let classData: ClassData = classDataProxy.addClass( className, x, y );
-        let classContainer: HTMLDivElement = this.domHelper.createClassElement( x, y );
+        let classDataProxy: ClassDataProxy = ClassDataProxy.getInstance(),
+            classData: ClassData = classDataProxy.addClass( className, x, y );
 
-        classContainer.innerText = className;
+        this.renderClass( classData );
+    }
+
+    private renderClass( classData: ClassData ) {
+
+        let classContainer: HTMLDivElement = this.domHelper.createClassElement( classData.x, classData.y );
+
+        classContainer.innerText = classData.name;
         classContainer.draggable = true;
-        classContainer.ondragstart = this.startDragClass.bind( this );
+        classContainer.ondragstart = this.onDragStart.bind( this );
         classContainer.ondragend = this.dropClass.bind( this, classData );
         classContainer.ondblclick = this.openClass.bind( this, classData );
 
         this.canvas.appendChild( classContainer );
-    }
-
-    /**
-     * Get the mouse offset relative to the event target's origin
-     * @param event 
-     */
-    private startDragClass( event: DragEvent ) {
-
-        let div: HTMLDivElement = <HTMLDivElement> event.target,
-            targetRect: ClientRect = div.getBoundingClientRect();
-
-        // !! magic number
-        this.mouseOffsetData = new Vector2( event.pageX - targetRect.left, event.pageY - targetRect.top - 21 );
     }
 
     /**
@@ -46,17 +36,12 @@ class CanvasAPI extends AbstractCanvasAPI {
      */
     private dropClass( classData: ClassData, event: DragEvent ) {
 
-        event.preventDefault();
+        let position: Vector2 = super.onDragEnd( event ),
+            classDataProxy: ClassDataProxy = ClassDataProxy.getInstance();
 
-        let div: HTMLDivElement = <HTMLDivElement> event.target;
-        let classDataProxy: ClassDataProxy = ClassDataProxy.getInstance();
-
-        classData.x = ( event.pageX - this.canvasOffset.x - this.mouseOffsetData.x );
-        classData.y = ( event.pageY - this.canvasOffset.y - this.mouseOffsetData.y );
+        classData.x = position.x;
+        classData.y = position.y;
         classDataProxy.updateClass( classData );
-
-        div.style.left = classData.x + 'px';
-        div.style.top = classData.y + 'px';
     }
 
     /**

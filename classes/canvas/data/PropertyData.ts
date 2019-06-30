@@ -1,15 +1,13 @@
-class PropertyData {
+/// <reference path='AbstractCanvasData.ts' />
 
-    public name: string;
-    public x: number;
-    public y: number;
+class PropertyData extends AbstractCanvasData {
+
     public private: boolean;
 
     public constructor( name: string, x: number, y: number ) {
-        this.name = name;
-        this.x = x;
-        this.y = y;
-        this.private = false;
 
+        super( name, x, y );
+
+        this.private = false;
     }
 }

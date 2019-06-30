@@ -5,40 +5,77 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
     private currentClassData: ClassData;
 
     public openClass( classData: ClassData ) {
-        console.log( classData );
+
         this.currentClassData = classData;
-        this.renderClassData( classData );
+        this.renderClass( classData );
     }
 
+    /**
+     * Clear the class canvas when a class is closed.
+     */
     public closeClass() {
 
         this.domHelper.removeAllChildren( this.canvas );
     }
 
+    /**
+     * Add a property to the current class and render it on the canvas.
+     * @param propertyName the name of the propertyy
+     * @param x canvas coordinate X
+     * @param y canvas coordinate Y
+     */
     public addProperty( propertyName: string, x: number, y: number ) {
 
-        let propertyContainer: HTMLDivElement = this.domHelper.createPropertyElement( 100, 100 );
+        let propertyData: PropertyData = this.addPropertyToClassData( propertyName, x, y );
 
-        propertyContainer.innerText = propertyName;
-
-        this.canvas.appendChild( propertyContainer );
-
-        let classDataProxy: ClassDataProxy = ClassDataProxy.getInstance();
-
-        this.currentClassData.addProperty( propertyName, x, y );
-        classDataProxy.updateClass( this.currentClassData );
+        this.renderProperty( propertyData );
     }
 
-    private renderClassData( classData: ClassData ) {
+    /**
+     * Add a property to the current class and update the class record.
+     * @param propertyName the name of the property
+     * @param x canvas coordinate X
+     * @param y canvas coordinate Y
+     * @returns a copy of the added property object
+     */
+    private addPropertyToClassData( propertyName: string, x: number, y: number ): PropertyData {
+
+        let newProperty: PropertyData = this.currentClassData.addProperty( propertyName, x, y );
+
+        ClassDataProxy.getInstance().updateClass( this.currentClassData );
+
+        return newProperty;
+    }
+
+    /**
+     * Render class to canvas. Display properties and methods;
+     * @param classData the class object
+     */
+    private renderClass( classData: ClassData ) {
 
         if ( classData.properties !== undefined )
-            for ( let i = 0, len = classData.properties.length; i < len; i++ ) {
-                let propertyContainer: HTMLDivElement = this.domHelper.createPropertyElement( classData.properties[i].x, classData.properties[i].y );
+            classData.properties.map( this.renderProperty, this );
+    }
 
-                propertyContainer.innerText = classData.properties[i].name;
+    private renderProperty( propertyData: PropertyData ) {
 
-                this.canvas.appendChild( propertyContainer );
+        let propertyContainer: HTMLDivElement = this.domHelper.createPropertyElement( propertyData.x, propertyData.y );
 
-            }
+        propertyContainer.innerText = propertyData.name;
+        propertyContainer.draggable = true;
+        propertyContainer.ondragstart = this.onDragStart.bind( this );
+        propertyContainer.ondragend = this.dropProperty.bind( this, propertyData );
+
+        this.canvas.appendChild( propertyContainer );
+    }
+
+    private dropProperty( propertyData: PropertyData, event: DragEvent ) {
+
+        let position: Vector2 = this.onDragEnd( event ),
+            classDataProxy: ClassDataProxy = ClassDataProxy.getInstance();
+
+        propertyData.x = position.x;
+        propertyData.y = position.y;
+        classDataProxy.updateClass( this.currentClassData );
     }
 }

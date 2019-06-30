@@ -33,21 +33,17 @@ class ClassDataProxy {
     // put
     public updateClass( classData: ClassData ): ClassData {
 
-        let originalClassData: ClassData = this.getClassById( classData.getId() );
+        let originalClassData: ClassData = this.getClassById( classData.id );
 
-        originalClassData.name = classData.name;
-        originalClassData.x = classData.x;
-        originalClassData.y = classData.y;
-        originalClassData.properties = classData.properties;
-        // also update properties and methods;
-console.log(this.classes);
+        originalClassData.update(classData);
+
         return originalClassData.copy();
     }
 
     private getClassById( id: number ): ClassData {
 
         for ( let i = 0, len = this.classes.length; i < len; i++ )
-            if ( this.classes[i].getId() == id )
+            if ( this.classes[i].id == id )
                 return this.classes[i];
 
         return null;

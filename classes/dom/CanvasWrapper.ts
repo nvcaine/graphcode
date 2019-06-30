@@ -10,26 +10,39 @@ class CanvasWrapper {
     private appCanvasAPI: CanvasAPI;
     private classCanvasAPI: ClassCanvasAPI;
 
-    public constructor( canvasElementId: string ) {
+    public constructor( canvasElementId: string, classCanvasElementId: string ) {
+
+        this.initDOMElements( canvasElementId, classCanvasElementId );
+        this.initAPIs();
+        this.initMessagingContainer();
+    }
+
+    private initDOMElements( canvasElementId: string, classCanvasElementId: string ) {
 
         this.appCanvas = <HTMLDivElement> document.getElementById( canvasElementId );
-        this.classCanvas = <HTMLDivElement> document.getElementById( 'class-canvas' );
-        this.classCanvas.hidden = true;
+        this.classCanvas = <HTMLDivElement> document.getElementById( classCanvasElementId );
 
         let domRect: ClientRect = document.body.getBoundingClientRect();
 
         this.appCanvas.style.width = this.classCanvas.style.width = domRect.width + 'px';
         this.appCanvas.style.height = this.classCanvas.style.height = domRect.height + 'px';
+        this.appCanvas.style.position = this.classCanvas.style.position = 'relative;'
 
         console.log( '## Canvas initialized: ' + this.appCanvas.style.width + ' ' + this.appCanvas.style.height );
+    }
+
+    private initAPIs() {
 
         this.appCanvasAPI = new CanvasAPI( this.appCanvas );
-        this.classCanvasAPI = new ClassCanvasAPI( this.classCanvas );
+        this.appCanvas.hidden = true; // hide the app canvas in order to correctly initalize the class canvas
 
-        this.initMessagingContainer();
+        this.classCanvasAPI = new ClassCanvasAPI( this.classCanvas ); // correctly positioned for getting the offsets
+        this.classCanvas.hidden = true;
+        this.appCanvas.hidden = false;
     }
 
     private initMessagingContainer() {
+
         let messagingManager: MessagingManager = MessagingManager.getInstance();
 
         messagingManager.onMessage( 'add-class', this.addClass.bind( this ) );
@@ -60,7 +73,7 @@ class CanvasWrapper {
     }
 
     private addClassProperty( propertyName: any ) {
-        console.log( 'add class property' );
+
         this.classCanvasAPI.addProperty( propertyName, 100, 100 );
     }
 }
