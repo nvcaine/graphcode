@@ -1,45 +1,54 @@
-class ClassData {
-    // make properties private
-    public name: string;
-    public x: number;
-    public y: number;
+/// <reference path='AbstractCanvasData.ts' />
 
-    private id: number;
+class ClassData extends AbstractCanvasData {
 
-    // !! make private
-    public properties: PropertyData[];
+    private _id: number;
+    private _properties: PropertyData[];
 
     public constructor( name: string, x: number, y: number ) {
 
-        this.name = name;
-        this.x = x;
-        this.y = y;
-        this.id = +new Date;
+        super( name, x, y );
+
+        this._id = +new Date;
     }
 
-    public getId(): number {
+    public get id(): number {
 
-        return this.id;
+        return this._id;
+    }
+
+    public get properties(): PropertyData[] {
+
+        return this._properties;
     }
 
     public copy(): ClassData {
 
         let copy: ClassData = new ClassData( this.name, this.x, this.y );
 
-        copy.id = this.id;
+        copy._id = this._id;
 
         return copy;
     }
 
+    public update( classData: ClassData ) {
+
+        this.name = classData.name;
+        this.x = classData.x;
+        this.y = classData.y;
+        this._properties = classData._properties;
+        // also update methods;
+    }
+
     public addProperty( propertyName: string, x: number, y: number ): PropertyData {
 
-        if ( this.properties === undefined ) {
-            this.properties = [];
+        if ( this._properties === undefined ) {
+            this._properties = [];
         }
 
         let newProperty: PropertyData = new PropertyData( propertyName, x, y );
 
-        this.properties.push( newProperty );
+        this._properties.push( newProperty );
 
         return newProperty;
     }

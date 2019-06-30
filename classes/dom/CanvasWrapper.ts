@@ -10,10 +10,17 @@ class CanvasWrapper {
     private appCanvasAPI: CanvasAPI;
     private classCanvasAPI: ClassCanvasAPI;
 
-    public constructor( canvasElementId: string ) {
+    public constructor( canvasElementId: string, classCanvasElementId: string ) {
+
+        this.initDOMElements( canvasElementId, classCanvasElementId );
+        this.initAPIs();
+        this.initMessagingContainer();
+    }
+
+    private initDOMElements( canvasElementId: string, classCanvasElementId: string ) {
 
         this.appCanvas = <HTMLDivElement> document.getElementById( canvasElementId );
-        this.classCanvas = <HTMLDivElement> document.getElementById( 'class-canvas' );
+        this.classCanvas = <HTMLDivElement> document.getElementById( classCanvasElementId );
 
         let domRect: ClientRect = document.body.getBoundingClientRect();
 
@@ -22,15 +29,16 @@ class CanvasWrapper {
         this.appCanvas.style.position = this.classCanvas.style.position = 'relative;'
 
         console.log( '## Canvas initialized: ' + this.appCanvas.style.width + ' ' + this.appCanvas.style.height );
+    }
+
+    private initAPIs() {
 
         this.appCanvasAPI = new CanvasAPI( this.appCanvas );
-        this.appCanvas.hidden = true;
+        this.appCanvas.hidden = true; // hide the app canvas in order to correctly initalize the class canvas
 
-        this.classCanvasAPI = new ClassCanvasAPI( this.classCanvas );
+        this.classCanvasAPI = new ClassCanvasAPI( this.classCanvas ); // correctly positioned for getting the offsets
         this.classCanvas.hidden = true;
         this.appCanvas.hidden = false;
-
-        this.initMessagingContainer();
     }
 
     private initMessagingContainer() {
