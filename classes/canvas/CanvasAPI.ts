@@ -1,4 +1,4 @@
-/// <reference path="AbstractCanvasAPI.ts" />
+/// <reference path="./AbstractCanvasAPI.ts" />
 
 class CanvasAPI extends AbstractCanvasAPI {
 

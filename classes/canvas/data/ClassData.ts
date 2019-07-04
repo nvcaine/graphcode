@@ -1,4 +1,4 @@
-/// <reference path='AbstractCanvasData.ts' />
+/// <reference path='./AbstractCanvasData.ts' />
 
 class ClassData extends AbstractCanvasData {
 

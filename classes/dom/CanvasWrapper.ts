@@ -1,8 +1,14 @@
-/// <reference path="../messaging/MessagingManager.ts" />
+/// <reference path="./AbstractWrapper.ts" />
+
+/// <reference path="./consts/DOMContainers.ts" />
+
 /// <reference path="../canvas/CanvasAPI.ts" />
 /// <reference path="../canvas/ClassCanvasAPI.ts" />
 
-class CanvasWrapper {
+/// <reference path="../messaging/MessagingManager.ts" />
+/// <reference path="../messaging/consts/Messages.ts" />
+
+class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
 
     private appCanvas: HTMLDivElement;
     private classCanvas: HTMLDivElement;
@@ -10,17 +16,28 @@ class CanvasWrapper {
     private appCanvasAPI: CanvasAPI;
     private classCanvasAPI: ClassCanvasAPI;
 
-    public constructor( canvasElementId: string, classCanvasElementId: string ) {
+    public init( messenger: SimpleMessenger ) {
 
-        this.initDOMElements( canvasElementId, classCanvasElementId );
-        this.initAPIs();
-        this.initMessagingContainer();
+        try {
+            this.initCanvas( messenger );
+        } catch ( error ) {
+            console.error( error.message );
+        }
     }
 
-    private initDOMElements( canvasElementId: string, classCanvasElementId: string ) {
+    private initCanvas( messenger: SimpleMessenger ) {
 
-        this.appCanvas = <HTMLDivElement> document.getElementById( canvasElementId );
-        this.classCanvas = <HTMLDivElement> document.getElementById( classCanvasElementId );
+        this.initDOMElements();
+        this.initAPIs();
+        this.initMessagingContainer( messenger );
+
+        console.log( '## Canvas wrapper initialized' );
+    }
+
+    private initDOMElements() {
+
+        this.appCanvas = <HTMLDivElement> this.getElementById( DOMContainers.APP_CANVAS );
+        this.classCanvas = <HTMLDivElement> this.getElementById( DOMContainers.CLASS_CANVAS );
 
         let domRect: ClientRect = document.body.getBoundingClientRect();
 
@@ -41,16 +58,14 @@ class CanvasWrapper {
         this.appCanvas.hidden = false;
     }
 
-    private initMessagingContainer() {
+    private initMessagingContainer( messenger: SimpleMessenger ) {
 
-        let messagingManager: MessagingManager = MessagingManager.getInstance();
+        messenger.onMessage( Messages.ADD_CLASS, this.addClass.bind( this ) );
+        messenger.onMessage( Messages.OPEN_CLASS, this.openClass.bind( this ) );
+        messenger.onMessage( Messages.CLOSE_CLASS, this.closeClass.bind( this ) );
 
-        messagingManager.onMessage( 'add-class', this.addClass.bind( this ) );
-        messagingManager.onMessage( 'open-class', this.openClass.bind( this ) );
-        messagingManager.onMessage( 'close-class', this.closeClass.bind( this ) );
-
-        messagingManager.onMessage( 'add-class-property', this.addClassProperty.bind( this ) );
-        messagingManager.onMessage( 'add-class-method', this.addClassMethod.bind( this ) );
+        messenger.onMessage( Messages.ADD_CLASS_PROPERTY, this.addClassProperty.bind( this ) );
+        messenger.onMessage( Messages.ADD_CLASS_METHOD, this.addClassMethod.bind( this ) );
     }
 
     private addClass( className: any ) {
@@ -66,7 +81,7 @@ class CanvasWrapper {
         this.classCanvasAPI.openClass( classData );
     }
 
-    private closeClass( messageData: any ) {
+    private closeClass() {
 
         this.appCanvas.hidden = false;
         this.classCanvas.hidden = true;
