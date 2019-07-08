@@ -145,13 +145,16 @@ class UIWrapper extends AbstractWrapper implements DOMWrapper {
     }
 
     private openMethod( methodData: MethodData ) {
-        this.classInterface.hidden = false;
+
+        this.classInterface.hidden = true;
+        this.methodInterface.hidden = false;
         this.renderMethod( methodData );
     }
 
     private backClassClickHandler( messenger: SimpleMessenger ) {
 
         messenger.sendMessage( Messages.CLOSE_METHOD, undefined );
+
         this.methodInterface.hidden = true;
         this.classInterface.hidden = false;
     }

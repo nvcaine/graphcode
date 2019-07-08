@@ -90,6 +90,7 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
         messenger.onMessage( Messages.ADD_CLASS_METHOD, this.addClassMethod.bind( this ) );
 
         messenger.onMessage( Messages.OPEN_METHOD, this.openMethod.bind( this ) );
+        messenger.onMessage( Messages.CLOSE_METHOD, this.closeMethod.bind( this ) );
     }
 
     private addClass( className: any ) {
@@ -98,9 +99,6 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
     }
 
     private openClass( classData: ClassData ) {
-
-        console.log( '### open class' );
-        console.log( classData );
 
         this.appCanvas.hidden = true;
         this.classCanvas.hidden = false;
@@ -127,12 +125,17 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
 
     private openMethod( methodData: MethodData ) {
 
-        console.log( '### open method' );
-        console.log( methodData );
-
-        this.appCanvas.hidden = this.classCanvas.hidden = true;
+        this.classCanvas.hidden = true;
         this.methodCanvas.hidden = false;
 
         this.methodCanvasAPI.openMethod( methodData );
+    }
+
+    private closeMethod() {
+
+        this.methodCanvas.hidden = true;
+        this.classCanvas.hidden = false;
+
+        this.methodCanvasAPI.closeMethod();
     }
 }

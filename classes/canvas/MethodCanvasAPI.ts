@@ -5,6 +5,10 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
         this.renderMethod( methodData );
     }
 
+    public closeMethod() {
+        this.domHelper.removeAllChildren( this.canvas );
+    }
+
     private renderMethod( methodData: MethodData ) {
         console.log( '### renderMethod' );
     }

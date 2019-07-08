@@ -119,8 +119,10 @@ var AbstractCanvasAPI = /** @class */ (function () {
      */
     AbstractCanvasAPI.prototype.onDragStart = function (event) {
         var div = event.target, targetRect = div.getBoundingClientRect();
-        this.mouseOffsetData = new Vector2(event.pageX - targetRect.left, event.pageY - targetRect.top - 21 // !! magic number
+        this.mouseOffsetData = new Vector2(event.pageX - targetRect.left, event.pageY - targetRect.top - 42 // !! magic number
         );
+        console.log('mouse offset');
+        console.log(this.mouseOffsetData);
     };
     /**
      * Update the position of the dragged element on the canvas.
@@ -130,6 +132,8 @@ var AbstractCanvasAPI = /** @class */ (function () {
         event.preventDefault();
         var div = event.target;
         var result = new Vector2(event.pageX - this.canvasOffset.x - this.mouseOffsetData.x, event.pageY - this.canvasOffset.y - this.mouseOffsetData.y);
+        console.log('drag end');
+        console.log(result);
         div.style.left = result.x + 'px';
         div.style.top = result.y + 'px';
         return result;
@@ -277,6 +281,9 @@ var MethodCanvasAPI = /** @class */ (function (_super) {
     MethodCanvasAPI.prototype.openMethod = function (methodData) {
         this.renderMethod(methodData);
     };
+    MethodCanvasAPI.prototype.closeMethod = function () {
+        this.domHelper.removeAllChildren(this.canvas);
+    };
     MethodCanvasAPI.prototype.renderMethod = function (methodData) {
         console.log('### renderMethod');
     };
@@ -385,6 +392,7 @@ var CanvasWrapper = /** @class */ (function (_super) {
         messenger.onMessage(Messages.ADD_CLASS_PROPERTY, this.addClassProperty.bind(this));
         messenger.onMessage(Messages.ADD_CLASS_METHOD, this.addClassMethod.bind(this));
         messenger.onMessage(Messages.OPEN_METHOD, this.openMethod.bind(this));
+        messenger.onMessage(Messages.CLOSE_METHOD, this.closeMethod.bind(this));
     };
     CanvasWrapper.prototype.addClass = function (className) {
         this.appCanvasAPI.addClass(className, 100, 100);
@@ -410,9 +418,14 @@ var CanvasWrapper = /** @class */ (function (_super) {
     CanvasWrapper.prototype.openMethod = function (methodData) {
         console.log('### open method');
         console.log(methodData);
-        this.appCanvas.hidden = this.classCanvas.hidden = true;
+        this.classCanvas.hidden = true;
         this.methodCanvas.hidden = false;
         this.methodCanvasAPI.openMethod(methodData);
+    };
+    CanvasWrapper.prototype.closeMethod = function () {
+        this.methodCanvas.hidden = true;
+        this.classCanvas.hidden = false;
+        this.methodCanvasAPI.closeMethod();
     };
     return CanvasWrapper;
 }(AbstractWrapper));
@@ -597,7 +610,8 @@ var UIWrapper = /** @class */ (function (_super) {
             messenger.sendMessage(Messages.ADD_CLASS_METHOD, methodName);
     };
     UIWrapper.prototype.openMethod = function (methodData) {
-        this.classInterface.hidden = false;
+        this.classInterface.hidden = true;
+        this.methodInterface.hidden = false;
         this.renderMethod(methodData);
     };
     UIWrapper.prototype.backClassClickHandler = function (messenger) {
@@ -619,8 +633,8 @@ var Application = /** @class */ (function () {
     Application.run = function () {
         console.log('# start new app');
         this.initWrappers([
-            new UIWrapper,
-            new CanvasWrapper
+            new CanvasWrapper,
+            new UIWrapper
         ], MessagingManager.getInstance());
         console.log('# wrappers initialized - exit');
     };

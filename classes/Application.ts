@@ -9,8 +9,8 @@ class Application {
 
         this.initWrappers(
             [
-                new UIWrapper,
-                new CanvasWrapper
+                new CanvasWrapper,
+                new UIWrapper
             ],
             MessagingManager.getInstance()
         );

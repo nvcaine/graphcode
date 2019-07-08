@@ -38,8 +38,11 @@ abstract class AbstractCanvasAPI {
 
         this.mouseOffsetData = new Vector2(
             event.pageX - targetRect.left,
-            event.pageY - targetRect.top - 21 // !! magic number
+            event.pageY - targetRect.top - 42 // !! magic number
         );
+
+        console.log('mouse offset');
+        console.log(this.mouseOffsetData);
     }
 
     /**
@@ -55,6 +58,9 @@ abstract class AbstractCanvasAPI {
             event.pageX - this.canvasOffset.x - this.mouseOffsetData.x,
             event.pageY - this.canvasOffset.y - this.mouseOffsetData.y
         );
+
+        console.log('drag end');
+        console.log(result);
 
         div.style.left = result.x + 'px';
         div.style.top = result.y + 'px';
