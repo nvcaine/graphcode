@@ -28,8 +28,10 @@ var DOMContainers = /** @class */ (function () {
     }
     DOMContainers.APP_CANVAS = 'app-canvas';
     DOMContainers.CLASS_CANVAS = 'class-canvas';
+    DOMContainers.METHOD_CANVAS = 'method-canvas';
     DOMContainers.APP_INTERFACE = 'app-interface';
     DOMContainers.CLASS_INTERFACE = 'class-interface';
+    DOMContainers.METHOD_INTERFACE = 'method-interface';
     return DOMContainers;
 }());
 var Vector2 = /** @class */ (function () {
@@ -177,7 +179,7 @@ var AppCanvasAPI = /** @class */ (function (_super) {
      */
     AppCanvasAPI.prototype.openClass = function (classData, event) {
         var messagingManager = MessagingManager.getInstance();
-        messagingManager.sendMessage('open-class', classData);
+        messagingManager.sendMessage(Messages.OPEN_CLASS, classData);
     };
     return AppCanvasAPI;
 }(AbstractCanvasAPI));
@@ -252,6 +254,7 @@ var ClassCanvasAPI = /** @class */ (function (_super) {
         methodContainer.draggable = true;
         methodContainer.ondragstart = this.onDragStart.bind(this);
         methodContainer.ondragend = this.dropElement.bind(this, methodData);
+        methodContainer.ondblclick = this.openMethod.bind(this, methodData);
         this.canvas.appendChild(methodContainer);
     };
     ClassCanvasAPI.prototype.dropElement = function (elementData, event) {
@@ -260,7 +263,24 @@ var ClassCanvasAPI = /** @class */ (function (_super) {
         elementData.y = position.y;
         classDataProxy.updateClass(this.currentClassData);
     };
+    ClassCanvasAPI.prototype.openMethod = function (methodData) {
+        var messagingManager = MessagingManager.getInstance();
+        messagingManager.sendMessage(Messages.OPEN_METHOD, methodData);
+    };
     return ClassCanvasAPI;
+}(AbstractCanvasAPI));
+var MethodCanvasAPI = /** @class */ (function (_super) {
+    __extends(MethodCanvasAPI, _super);
+    function MethodCanvasAPI() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    MethodCanvasAPI.prototype.openMethod = function (methodData) {
+        this.renderMethod(methodData);
+    };
+    MethodCanvasAPI.prototype.renderMethod = function (methodData) {
+        console.log('### renderMethod');
+    };
+    return MethodCanvasAPI;
 }(AbstractCanvasAPI));
 var MessagingManager = /** @class */ (function () {
     function MessagingManager() {
@@ -299,12 +319,15 @@ var Messages = /** @class */ (function () {
     Messages.CLOSE_CLASS = 'close-class';
     Messages.ADD_CLASS_PROPERTY = 'add-class-property';
     Messages.ADD_CLASS_METHOD = 'add-class-method';
+    Messages.OPEN_METHOD = 'open-method';
+    Messages.CLOSE_METHOD = 'close-method';
     return Messages;
 }());
 /// <reference path="./AbstractWrapper.ts" />
 /// <reference path="./consts/DOMContainers.ts" />
 /// <reference path="../canvas/AppCanvasAPI.ts" />
 /// <reference path="../canvas/ClassCanvasAPI.ts" />
+/// <reference path="../canvas/MethodCanvasAPI.ts" />
 /// <reference path="../messaging/MessagingManager.ts" />
 /// <reference path="../messaging/consts/Messages.ts" />
 var CanvasWrapper = /** @class */ (function (_super) {
@@ -314,32 +337,45 @@ var CanvasWrapper = /** @class */ (function (_super) {
     }
     CanvasWrapper.prototype.init = function (messenger) {
         try {
-            this.initCanvas(messenger);
+            this.initCanvases(messenger);
         }
         catch (error) {
             console.error(error.message);
         }
     };
-    CanvasWrapper.prototype.initCanvas = function (messenger) {
+    CanvasWrapper.prototype.initCanvases = function (messenger) {
         this.initDOMElements();
         this.initAPIs();
         this.initMessagingContainer(messenger);
         console.log('## Canvas wrapper initialized');
     };
     CanvasWrapper.prototype.initDOMElements = function () {
-        this.appCanvas = this.getElementById(DOMContainers.APP_CANVAS);
-        this.classCanvas = this.getElementById(DOMContainers.CLASS_CANVAS);
         var domRect = document.body.getBoundingClientRect();
-        this.appCanvas.style.width = this.classCanvas.style.width = domRect.width + 'px';
-        this.appCanvas.style.height = this.classCanvas.style.height = domRect.height + 'px';
-        this.appCanvas.style.position = this.classCanvas.style.position = 'relative;';
-        console.log('## Canvas initialized: ' + this.appCanvas.style.width + ' ' + this.appCanvas.style.height);
+        this.appCanvas = this.initCanvasElement(DOMContainers.APP_CANVAS, domRect);
+        this.classCanvas = this.initCanvasElement(DOMContainers.CLASS_CANVAS, domRect);
+        this.methodCanvas = this.initCanvasElement(DOMContainers.METHOD_CANVAS, domRect);
+        console.log('## Canvases initialized: ' + this.appCanvas.style.width + ' ' + this.appCanvas.style.height);
+    };
+    /**
+     * Get an HTML element and resize it to fit the specified dimentions
+     * @param id the id of the HTML canvas element
+     * @param domRect the dimentions used to update the canvas
+     * @returns the initialized element
+     */
+    CanvasWrapper.prototype.initCanvasElement = function (id, domRect) {
+        var canvas = this.getElementById(id);
+        canvas.style.width = domRect.width + 'px';
+        canvas.style.height = domRect.height + 'px';
+        canvas.style.position = 'relative';
+        return canvas;
     };
     CanvasWrapper.prototype.initAPIs = function () {
         this.appCanvasAPI = new AppCanvasAPI(this.appCanvas);
         this.appCanvas.hidden = true; // hide the app canvas in order to correctly initalize the class canvas
         this.classCanvasAPI = new ClassCanvasAPI(this.classCanvas); // correctly positioned for getting the offsets
         this.classCanvas.hidden = true;
+        this.methodCanvasAPI = new MethodCanvasAPI(this.methodCanvas);
+        this.methodCanvas.hidden = true;
         this.appCanvas.hidden = false;
     };
     CanvasWrapper.prototype.initMessagingContainer = function (messenger) {
@@ -348,11 +384,14 @@ var CanvasWrapper = /** @class */ (function (_super) {
         messenger.onMessage(Messages.CLOSE_CLASS, this.closeClass.bind(this));
         messenger.onMessage(Messages.ADD_CLASS_PROPERTY, this.addClassProperty.bind(this));
         messenger.onMessage(Messages.ADD_CLASS_METHOD, this.addClassMethod.bind(this));
+        messenger.onMessage(Messages.OPEN_METHOD, this.openMethod.bind(this));
     };
     CanvasWrapper.prototype.addClass = function (className) {
         this.appCanvasAPI.addClass(className, 100, 100);
     };
     CanvasWrapper.prototype.openClass = function (classData) {
+        console.log('### open class');
+        console.log(classData);
         this.appCanvas.hidden = true;
         this.classCanvas.hidden = false;
         this.classCanvasAPI.openClass(classData);
@@ -368,6 +407,13 @@ var CanvasWrapper = /** @class */ (function (_super) {
     CanvasWrapper.prototype.addClassMethod = function (methodName) {
         this.classCanvasAPI.addMethod(methodName, 100, 100);
     };
+    CanvasWrapper.prototype.openMethod = function (methodData) {
+        console.log('### open method');
+        console.log(methodData);
+        this.appCanvas.hidden = this.classCanvas.hidden = true;
+        this.methodCanvas.hidden = false;
+        this.methodCanvasAPI.openMethod(methodData);
+    };
     return CanvasWrapper;
 }(AbstractWrapper));
 var InterfaceButtons = /** @class */ (function () {
@@ -377,6 +423,7 @@ var InterfaceButtons = /** @class */ (function () {
     InterfaceButtons.INTERFACE_BACK = 'interface-back';
     InterfaceButtons.INTERFACE_ADD_CLASS_PROPERTY = 'interface-class-add-property';
     InterfaceButtons.INTERFACE_ADD_CLASS_METHOD = 'interface-class-add-method';
+    InterfaceButtons.INTERFACE_CLASS_BACK = 'interface-class-back';
     return InterfaceButtons;
 }());
 var AbstractCanvasData = /** @class */ (function () {
@@ -457,6 +504,7 @@ var UIWrapper = /** @class */ (function (_super) {
     }
     UIWrapper.prototype.init = function (messenger) {
         messenger.onMessage(Messages.OPEN_CLASS, this.openClass.bind(this));
+        messenger.onMessage(Messages.OPEN_METHOD, this.openMethod.bind(this));
         try {
             this.initInterfaces(messenger);
         }
@@ -467,6 +515,7 @@ var UIWrapper = /** @class */ (function (_super) {
     UIWrapper.prototype.initInterfaces = function (messenger) {
         this.initAppInterface(messenger);
         this.initClassInterface(messenger);
+        this.initMethodInterface(messenger);
         console.log('## Interface initalized');
     };
     UIWrapper.prototype.initAppInterface = function (messenger) {
@@ -479,6 +528,11 @@ var UIWrapper = /** @class */ (function (_super) {
         this.classInterface.hidden = true;
         this.initInterfaceButton(InterfaceButtons.INTERFACE_ADD_CLASS_PROPERTY, this.addPropertyClickHandler, messenger);
         this.initInterfaceButton(InterfaceButtons.INTERFACE_ADD_CLASS_METHOD, this.addMethodClickHandler, messenger);
+    };
+    UIWrapper.prototype.initMethodInterface = function (messenger) {
+        this.methodInterface = this.getElementById(DOMContainers.METHOD_INTERFACE);
+        this.methodInterface.hidden = true;
+        this.initInterfaceButton(InterfaceButtons.INTERFACE_CLASS_BACK, this.backClassClickHandler, messenger);
     };
     /**
      * Get an element by its id and attach a click handler
@@ -542,6 +596,19 @@ var UIWrapper = /** @class */ (function (_super) {
         if (methodName)
             messenger.sendMessage(Messages.ADD_CLASS_METHOD, methodName);
     };
+    UIWrapper.prototype.openMethod = function (methodData) {
+        this.classInterface.hidden = false;
+        this.renderMethod(methodData);
+    };
+    UIWrapper.prototype.backClassClickHandler = function (messenger) {
+        messenger.sendMessage(Messages.CLOSE_METHOD, undefined);
+        this.methodInterface.hidden = true;
+        this.classInterface.hidden = false;
+    };
+    UIWrapper.prototype.renderMethod = function (methodData) {
+        var nameSpan = document.getElementById('interface-method-name');
+        nameSpan.innerHTML = methodData.name;
+    };
     return UIWrapper;
 }(AbstractWrapper));
 /// <reference path="./dom/CanvasWrapper.ts" />
@@ -552,8 +619,8 @@ var Application = /** @class */ (function () {
     Application.run = function () {
         console.log('# start new app');
         this.initWrappers([
-            new CanvasWrapper,
-            new UIWrapper
+            new UIWrapper,
+            new CanvasWrapper
         ], MessagingManager.getInstance());
         console.log('# wrappers initialized - exit');
     };

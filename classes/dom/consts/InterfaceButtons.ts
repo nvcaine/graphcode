@@ -7,4 +7,6 @@ class InterfaceButtons {
     public static readonly INTERFACE_ADD_CLASS_PROPERTY: string = 'interface-class-add-property';
 
     public static readonly INTERFACE_ADD_CLASS_METHOD: string = 'interface-class-add-method';
+
+    public static readonly INTERFACE_CLASS_BACK: string = 'interface-class-back';
 }

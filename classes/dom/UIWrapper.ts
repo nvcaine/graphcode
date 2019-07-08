@@ -9,10 +9,12 @@ class UIWrapper extends AbstractWrapper implements DOMWrapper {
 
     private appInterface: HTMLDivElement;
     private classInterface: HTMLDivElement;
+    private methodInterface: HTMLDivElement;
 
     public init( messenger: SimpleMessenger ) {
 
         messenger.onMessage( Messages.OPEN_CLASS, this.openClass.bind( this ) );
+        messenger.onMessage( Messages.OPEN_METHOD, this.openMethod.bind( this ) );
 
         try {
             this.initInterfaces( messenger );
@@ -25,6 +27,7 @@ class UIWrapper extends AbstractWrapper implements DOMWrapper {
 
         this.initAppInterface( messenger );
         this.initClassInterface( messenger );
+        this.initMethodInterface( messenger );
 
         console.log( '## Interface initalized' );
     }
@@ -44,6 +47,14 @@ class UIWrapper extends AbstractWrapper implements DOMWrapper {
 
         this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_CLASS_PROPERTY, this.addPropertyClickHandler, messenger );
         this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_CLASS_METHOD, this.addMethodClickHandler, messenger );
+    }
+
+    private initMethodInterface( messenger: SimpleMessenger ) {
+
+        this.methodInterface = <HTMLDivElement> this.getElementById( DOMContainers.METHOD_INTERFACE );
+        this.methodInterface.hidden = true;
+
+        this.initInterfaceButton( InterfaceButtons.INTERFACE_CLASS_BACK, this.backClassClickHandler, messenger );
     }
 
     /**
@@ -131,5 +142,24 @@ class UIWrapper extends AbstractWrapper implements DOMWrapper {
 
         if ( methodName )
             messenger.sendMessage( Messages.ADD_CLASS_METHOD, methodName );
+    }
+
+    private openMethod( methodData: MethodData ) {
+        this.classInterface.hidden = false;
+        this.renderMethod( methodData );
+    }
+
+    private backClassClickHandler( messenger: SimpleMessenger ) {
+
+        messenger.sendMessage( Messages.CLOSE_METHOD, undefined );
+        this.methodInterface.hidden = true;
+        this.classInterface.hidden = false;
+    }
+
+    private renderMethod( methodData: MethodData ) {
+
+        let nameSpan: HTMLSpanElement = <HTMLSpanElement> document.getElementById( 'interface-method-name' );
+
+        nameSpan.innerHTML = methodData.name;
     }
 }

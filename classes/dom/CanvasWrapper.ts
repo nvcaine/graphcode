@@ -4,6 +4,7 @@
 
 /// <reference path="../canvas/AppCanvasAPI.ts" />
 /// <reference path="../canvas/ClassCanvasAPI.ts" />
+/// <reference path="../canvas/MethodCanvasAPI.ts" />
 
 /// <reference path="../messaging/MessagingManager.ts" />
 /// <reference path="../messaging/consts/Messages.ts" />
@@ -12,20 +13,22 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
 
     private appCanvas: HTMLDivElement;
     private classCanvas: HTMLDivElement;
+    private methodCanvas: HTMLDivElement;
 
     private appCanvasAPI: AppCanvasAPI;
     private classCanvasAPI: ClassCanvasAPI;
+    private methodCanvasAPI: MethodCanvasAPI;
 
     public init( messenger: SimpleMessenger ) {
 
         try {
-            this.initCanvas( messenger );
+            this.initCanvases( messenger );
         } catch ( error ) {
             console.error( error.message );
         }
     }
 
-    private initCanvas( messenger: SimpleMessenger ) {
+    private initCanvases( messenger: SimpleMessenger ) {
 
         this.initDOMElements();
         this.initAPIs();
@@ -36,16 +39,31 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
 
     private initDOMElements() {
 
-        this.appCanvas = <HTMLDivElement> this.getElementById( DOMContainers.APP_CANVAS );
-        this.classCanvas = <HTMLDivElement> this.getElementById( DOMContainers.CLASS_CANVAS );
-
         let domRect: ClientRect = document.body.getBoundingClientRect();
 
-        this.appCanvas.style.width = this.classCanvas.style.width = domRect.width + 'px';
-        this.appCanvas.style.height = this.classCanvas.style.height = domRect.height + 'px';
-        this.appCanvas.style.position = this.classCanvas.style.position = 'relative;'
+        this.appCanvas = this.initCanvasElement( DOMContainers.APP_CANVAS, domRect );
+        this.classCanvas = this.initCanvasElement( DOMContainers.CLASS_CANVAS, domRect );
+        this.methodCanvas = this.initCanvasElement( DOMContainers.METHOD_CANVAS, domRect );
 
-        console.log( '## Canvas initialized: ' + this.appCanvas.style.width + ' ' + this.appCanvas.style.height );
+        console.log( '## Canvases initialized: ' + this.appCanvas.style.width + ' ' + this.appCanvas.style.height );
+
+    }
+
+    /**
+     * Get an HTML element and resize it to fit the specified dimentions
+     * @param id the id of the HTML canvas element
+     * @param domRect the dimentions used to update the canvas
+     * @returns the initialized element
+     */
+    private initCanvasElement( id: string, domRect: ClientRect ): HTMLDivElement {
+
+        let canvas: HTMLDivElement = <HTMLDivElement> this.getElementById( id );
+
+        canvas.style.width = domRect.width + 'px';
+        canvas.style.height = domRect.height + 'px';
+        canvas.style.position = 'relative';
+
+        return canvas;
     }
 
     private initAPIs() {
@@ -55,6 +73,10 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
 
         this.classCanvasAPI = new ClassCanvasAPI( this.classCanvas ); // correctly positioned for getting the offsets
         this.classCanvas.hidden = true;
+
+        this.methodCanvasAPI = new MethodCanvasAPI( this.methodCanvas );
+        this.methodCanvas.hidden = true;
+
         this.appCanvas.hidden = false;
     }
 
@@ -66,6 +88,8 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
 
         messenger.onMessage( Messages.ADD_CLASS_PROPERTY, this.addClassProperty.bind( this ) );
         messenger.onMessage( Messages.ADD_CLASS_METHOD, this.addClassMethod.bind( this ) );
+
+        messenger.onMessage( Messages.OPEN_METHOD, this.openMethod.bind( this ) );
     }
 
     private addClass( className: any ) {
@@ -74,6 +98,9 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
     }
 
     private openClass( classData: ClassData ) {
+
+        console.log( '### open class' );
+        console.log( classData );
 
         this.appCanvas.hidden = true;
         this.classCanvas.hidden = false;
@@ -96,5 +123,16 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
     private addClassMethod( methodName: any ) {
 
         this.classCanvasAPI.addMethod( methodName, 100, 100 );
+    }
+
+    private openMethod( methodData: MethodData ) {
+
+        console.log( '### open method' );
+        console.log( methodData );
+
+        this.appCanvas.hidden = this.classCanvas.hidden = true;
+        this.methodCanvas.hidden = false;
+
+        this.methodCanvasAPI.openMethod( methodData );
     }
 }

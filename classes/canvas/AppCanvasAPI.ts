@@ -53,6 +53,6 @@ class AppCanvasAPI extends AbstractCanvasAPI {
 
         let messagingManager: MessagingManager = MessagingManager.getInstance();
 
-        messagingManager.sendMessage( 'open-class', classData );
+        messagingManager.sendMessage( Messages.OPEN_CLASS, classData );
     }
 }

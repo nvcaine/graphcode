@@ -95,6 +95,7 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
         methodContainer.draggable = true;
         methodContainer.ondragstart = this.onDragStart.bind( this );
         methodContainer.ondragend = this.dropElement.bind( this, methodData );
+        methodContainer.ondblclick = this.openMethod.bind( this, methodData );
 
         this.canvas.appendChild( methodContainer );
     }
@@ -107,5 +108,12 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
         elementData.x = position.x;
         elementData.y = position.y;
         classDataProxy.updateClass( this.currentClassData );
+    }
+
+    private openMethod( methodData: MethodData ) {
+
+        let messagingManager: MessagingManager = MessagingManager.getInstance();
+
+        messagingManager.sendMessage( Messages.OPEN_METHOD, methodData );
     }
 }
