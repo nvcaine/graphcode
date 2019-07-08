@@ -119,7 +119,7 @@ var AbstractCanvasAPI = /** @class */ (function () {
      */
     AbstractCanvasAPI.prototype.onDragStart = function (event) {
         var div = event.target, targetRect = div.getBoundingClientRect();
-        this.mouseOffsetData = new Vector2(event.pageX - targetRect.left, event.pageY - targetRect.top - 42 // !! magic number
+        this.mouseOffsetData = new Vector2(event.pageX - targetRect.left, event.pageY - targetRect.top // !! magic number
         );
         console.log('mouse offset');
         console.log(this.mouseOffsetData);
@@ -398,8 +398,6 @@ var CanvasWrapper = /** @class */ (function (_super) {
         this.appCanvasAPI.addClass(className, 100, 100);
     };
     CanvasWrapper.prototype.openClass = function (classData) {
-        console.log('### open class');
-        console.log(classData);
         this.appCanvas.hidden = true;
         this.classCanvas.hidden = false;
         this.classCanvasAPI.openClass(classData);
@@ -416,8 +414,6 @@ var CanvasWrapper = /** @class */ (function (_super) {
         this.classCanvasAPI.addMethod(methodName, 100, 100);
     };
     CanvasWrapper.prototype.openMethod = function (methodData) {
-        console.log('### open method');
-        console.log(methodData);
         this.classCanvas.hidden = true;
         this.methodCanvas.hidden = false;
         this.methodCanvasAPI.openMethod(methodData);
@@ -633,8 +629,8 @@ var Application = /** @class */ (function () {
     Application.run = function () {
         console.log('# start new app');
         this.initWrappers([
-            new CanvasWrapper,
-            new UIWrapper
+            new UIWrapper,
+            new CanvasWrapper
         ], MessagingManager.getInstance());
         console.log('# wrappers initialized - exit');
     };
