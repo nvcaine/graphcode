@@ -1,5 +1,5 @@
-/// <reference path="dom/CanvasWrapper.ts" />
-/// <reference path="dom/UserInterface.ts" />
+/// <reference path="./dom/CanvasWrapper.ts" />
+/// <reference path="./dom/UIwrapper.ts" />
 
 class Application {
 
@@ -7,11 +7,22 @@ class Application {
 
         console.log( '# start new app' );
 
-        let canvasWrapper: CanvasWrapper = new CanvasWrapper( 'app-canvas', 'class-canvas' );
-        let userInterface: UserInterface = new UserInterface( 'app-interface' )
+        this.initWrappers(
+            [
+                new CanvasWrapper,
+                new UIWrapper
+            ],
+            MessagingManager.getInstance()
+        );
 
-        console.log( '# exit' );
+        console.log( '# wrappers initialized - exit' );
+    }
 
+    private static initWrappers( wrappers: DOMWrapper[], messenger: SimpleMessenger ) {
+
+        wrappers.map( ( wrapper: DOMWrapper ) => {
+            wrapper.init( messenger );
+        } );
     }
 }
 

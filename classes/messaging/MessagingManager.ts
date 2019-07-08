@@ -1,4 +1,4 @@
-class MessagingManager {
+class MessagingManager implements SimpleMessenger {
 
     private static instance: MessagingManager;
 
@@ -9,6 +9,7 @@ class MessagingManager {
     }
 
     public static getInstance(): MessagingManager {
+
         if ( this.instance === undefined )
             this.instance = new MessagingManager();
 

@@ -1,6 +1,4 @@
-/// <reference path='./AbstractCanvasData.ts' />
-
-class PropertyData extends AbstractCanvasData {
+class MethodData extends AbstractCanvasData {
 
     public private: boolean;
 

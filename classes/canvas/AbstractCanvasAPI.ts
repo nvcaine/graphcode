@@ -1,5 +1,6 @@
-/// <reference path='../dom/DOMHelper.ts' />
-/// <reference path='data/Vector2.ts' />
+/// <reference path='./data/Vector2.ts' />
+
+/// <reference path='./helpers/DOMHelper.ts' />
 
 abstract class AbstractCanvasAPI {
 
