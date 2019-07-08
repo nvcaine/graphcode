@@ -2,7 +2,7 @@
 
 /// <reference path="./consts/DOMContainers.ts" />
 
-/// <reference path="../canvas/CanvasAPI.ts" />
+/// <reference path="../canvas/AppCanvasAPI.ts" />
 /// <reference path="../canvas/ClassCanvasAPI.ts" />
 
 /// <reference path="../messaging/MessagingManager.ts" />
@@ -13,7 +13,7 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
     private appCanvas: HTMLDivElement;
     private classCanvas: HTMLDivElement;
 
-    private appCanvasAPI: CanvasAPI;
+    private appCanvasAPI: AppCanvasAPI;
     private classCanvasAPI: ClassCanvasAPI;
 
     public init( messenger: SimpleMessenger ) {
@@ -50,7 +50,7 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
 
     private initAPIs() {
 
-        this.appCanvasAPI = new CanvasAPI( this.appCanvas );
+        this.appCanvasAPI = new AppCanvasAPI( this.appCanvas );
         this.appCanvas.hidden = true; // hide the app canvas in order to correctly initalize the class canvas
 
         this.classCanvasAPI = new ClassCanvasAPI( this.classCanvas ); // correctly positioned for getting the offsets

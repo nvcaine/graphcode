@@ -1,6 +1,6 @@
 /// <reference path="./AbstractCanvasAPI.ts" />
 
-class CanvasAPI extends AbstractCanvasAPI {
+class AppCanvasAPI extends AbstractCanvasAPI {
 
     /**
      * Create class canvas element and save it in the global collection.

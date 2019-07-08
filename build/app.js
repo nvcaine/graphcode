@@ -135,9 +135,9 @@ var AbstractCanvasAPI = /** @class */ (function () {
     return AbstractCanvasAPI;
 }());
 /// <reference path="./AbstractCanvasAPI.ts" />
-var CanvasAPI = /** @class */ (function (_super) {
-    __extends(CanvasAPI, _super);
-    function CanvasAPI() {
+var AppCanvasAPI = /** @class */ (function (_super) {
+    __extends(AppCanvasAPI, _super);
+    function AppCanvasAPI() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     /**
@@ -146,11 +146,11 @@ var CanvasAPI = /** @class */ (function (_super) {
      * @param x
      * @param y
      */
-    CanvasAPI.prototype.addClass = function (className, x, y) {
+    AppCanvasAPI.prototype.addClass = function (className, x, y) {
         var classDataProxy = ClassDataProxy.getInstance(), classData = classDataProxy.addClass(className, x, y);
         this.renderClass(classData);
     };
-    CanvasAPI.prototype.renderClass = function (classData) {
+    AppCanvasAPI.prototype.renderClass = function (classData) {
         var classContainer = this.domHelper.createClassElement(classData.x, classData.y);
         classContainer.innerText = classData.name;
         classContainer.draggable = true;
@@ -164,7 +164,7 @@ var CanvasAPI = /** @class */ (function (_super) {
      * @param classData the object passed to the handler when creating a new class object
      * @param event
      */
-    CanvasAPI.prototype.dropClass = function (classData, event) {
+    AppCanvasAPI.prototype.dropClass = function (classData, event) {
         var position = _super.prototype.onDragEnd.call(this, event), classDataProxy = ClassDataProxy.getInstance();
         classData.x = position.x;
         classData.y = position.y;
@@ -175,11 +175,11 @@ var CanvasAPI = /** @class */ (function (_super) {
      * @param classData the object passed to the handler when creating a new class object
      * @param event
      */
-    CanvasAPI.prototype.openClass = function (classData, event) {
+    AppCanvasAPI.prototype.openClass = function (classData, event) {
         var messagingManager = MessagingManager.getInstance();
         messagingManager.sendMessage('open-class', classData);
     };
-    return CanvasAPI;
+    return AppCanvasAPI;
 }(AbstractCanvasAPI));
 /// <reference path="./AbstractCanvasAPI.ts" />
 var ClassCanvasAPI = /** @class */ (function (_super) {
@@ -303,7 +303,7 @@ var Messages = /** @class */ (function () {
 }());
 /// <reference path="./AbstractWrapper.ts" />
 /// <reference path="./consts/DOMContainers.ts" />
-/// <reference path="../canvas/CanvasAPI.ts" />
+/// <reference path="../canvas/AppCanvasAPI.ts" />
 /// <reference path="../canvas/ClassCanvasAPI.ts" />
 /// <reference path="../messaging/MessagingManager.ts" />
 /// <reference path="../messaging/consts/Messages.ts" />
@@ -336,7 +336,7 @@ var CanvasWrapper = /** @class */ (function (_super) {
         console.log('## Canvas initialized: ' + this.appCanvas.style.width + ' ' + this.appCanvas.style.height);
     };
     CanvasWrapper.prototype.initAPIs = function () {
-        this.appCanvasAPI = new CanvasAPI(this.appCanvas);
+        this.appCanvasAPI = new AppCanvasAPI(this.appCanvas);
         this.appCanvas.hidden = true; // hide the app canvas in order to correctly initalize the class canvas
         this.classCanvasAPI = new ClassCanvasAPI(this.classCanvas); // correctly positioned for getting the offsets
         this.classCanvas.hidden = true;
