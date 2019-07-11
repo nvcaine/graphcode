@@ -8,10 +8,7 @@ class AppCanvasAPI extends AbstractCanvasAPI {
      * @param x 
      * @param y 
      */
-    public addClass( className: string, x: number, y: number ) {
-
-        let classDataProxy: ClassDataProxy = ClassDataProxy.getInstance(),
-            classData: ClassData = classDataProxy.addClass( className, x, y );
+    public addClass( classData: ClassData ) {
 
         this.renderClass( classData );
     }
@@ -36,12 +33,10 @@ class AppCanvasAPI extends AbstractCanvasAPI {
      */
     private dropClass( classData: ClassData, event: DragEvent ) {
 
-        let position: Vector2 = super.onDragEnd( event ),
-            classDataProxy: ClassDataProxy = ClassDataProxy.getInstance();
+        let position: Vector2 = super.onDragEnd( event );
 
         classData.x = position.x;
         classData.y = position.y;
-        classDataProxy.updateClass( classData );
     }
 
     /**

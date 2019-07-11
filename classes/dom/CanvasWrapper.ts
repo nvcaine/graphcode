@@ -19,6 +19,9 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
     private classCanvasAPI: ClassCanvasAPI;
     private methodCanvasAPI: MethodCanvasAPI;
 
+    private openedClass: ClassData;
+    private openedMethod: MethodData;
+
     public init( messenger: SimpleMessenger ) {
 
         try {
@@ -97,7 +100,10 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
 
     private addClass( className: any ) {
 
-        this.appCanvasAPI.addClass( className, 100, 100 );
+        let classDataProxy: ClassDataProxy = ClassDataProxy.getInstance(),
+            classData: ClassData = classDataProxy.addClass( className, 100, 100 );
+
+        this.appCanvasAPI.addClass( classData );
     }
 
     private openClass( classData: ClassData ) {
@@ -106,6 +112,8 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
         this.classCanvas.hidden = false;
 
         this.classCanvasAPI.openClass( classData );
+
+        this.openedClass = classData;
     }
 
     private closeClass() {
@@ -113,16 +121,22 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
         this.appCanvas.hidden = false;
         this.classCanvas.hidden = true;
         this.classCanvasAPI.closeClass();
+
+        this.save();
     }
 
     private addClassProperty( propertyName: any ) {
 
-        this.classCanvasAPI.addProperty( propertyName, 100, 100 );
+        let newProperty: PropertyData = this.openedClass.addProperty( propertyName, 100, 100 );
+
+        this.classCanvasAPI.addProperty( newProperty );
     }
 
     private addClassMethod( methodName: any ) {
 
-        this.classCanvasAPI.addMethod( methodName, 100, 100 );
+        let newMethod: MethodData = this.openedClass.addMethod( methodName, 100, 100 );
+
+        this.classCanvasAPI.addMethod( newMethod );
     }
 
     private openMethod( methodData: MethodData ) {
@@ -131,6 +145,8 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
         this.methodCanvas.hidden = false;
 
         this.methodCanvasAPI.openMethod( methodData );
+
+        this.openedMethod = methodData;
     }
 
     private closeMethod() {
@@ -139,15 +155,23 @@ class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
         this.classCanvas.hidden = false;
 
         this.methodCanvasAPI.closeMethod();
+
+        this.save();
     }
 
     private addMethodParameter( parameterName: any ) {
 
-        this.methodCanvasAPI.addMethodParameter( parameterName, 100, 100 );
+        let newParameter: PropertyData = this.openedMethod.addParameter( parameterName, 100, 100 );
+
+        this.methodCanvasAPI.addParameter( newParameter );
     }
 
     private addMethodVariable( variableName: any ) {
 
         //this.methodCanvasAPI.addMethodVariable( variableName, 100, 100 );
+    }
+
+    private save() {
+        // ClassDataProxy.getInstance().updateClass( this.openedClass );
     }
 }

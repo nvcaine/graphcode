@@ -168,8 +168,7 @@ var AppCanvasAPI = /** @class */ (function (_super) {
      * @param x
      * @param y
      */
-    AppCanvasAPI.prototype.addClass = function (className, x, y) {
-        var classDataProxy = ClassDataProxy.getInstance(), classData = classDataProxy.addClass(className, x, y);
+    AppCanvasAPI.prototype.addClass = function (classData) {
         this.renderClass(classData);
     };
     AppCanvasAPI.prototype.renderClass = function (classData) {
@@ -187,10 +186,9 @@ var AppCanvasAPI = /** @class */ (function (_super) {
      * @param event
      */
     AppCanvasAPI.prototype.dropClass = function (classData, event) {
-        var position = _super.prototype.onDragEnd.call(this, event), classDataProxy = ClassDataProxy.getInstance();
+        var position = _super.prototype.onDragEnd.call(this, event);
         classData.x = position.x;
         classData.y = position.y;
-        classDataProxy.updateClass(classData);
     };
     /**
      * Open the double-clicked class
@@ -210,7 +208,6 @@ var ClassCanvasAPI = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     ClassCanvasAPI.prototype.openClass = function (classData) {
-        this.currentClassData = classData;
         this.renderClass(classData);
     };
     /**
@@ -225,30 +222,11 @@ var ClassCanvasAPI = /** @class */ (function (_super) {
      * @param x canvas coordinate X
      * @param y canvas coordinate Y
      */
-    ClassCanvasAPI.prototype.addProperty = function (propertyName, x, y) {
-        var propertyData = this.addPropertyToClassData(propertyName, x, y);
+    ClassCanvasAPI.prototype.addProperty = function (propertyData) {
         this.renderProperty(propertyData);
     };
-    ClassCanvasAPI.prototype.addMethod = function (methodName, x, y) {
-        var methodData = this.addMethodToClassData(methodName, x, y);
+    ClassCanvasAPI.prototype.addMethod = function (methodData) {
         this.renderMethod(methodData);
-    };
-    /**
-     * Add a property to the current class and update the class record.
-     * @param propertyName the name of the property
-     * @param x canvas coordinate X
-     * @param y canvas coordinate Y
-     * @returns a copy of the added property object
-     */
-    ClassCanvasAPI.prototype.addPropertyToClassData = function (propertyName, x, y) {
-        var newProperty = this.currentClassData.addProperty(propertyName, x, y);
-        ClassDataProxy.getInstance().updateClass(this.currentClassData);
-        return newProperty;
-    };
-    ClassCanvasAPI.prototype.addMethodToClassData = function (methodName, x, y) {
-        var newMethod = this.currentClassData.addMethod(methodName, x, y);
-        ClassDataProxy.getInstance().updateClass(this.currentClassData);
-        return newMethod;
     };
     /**
      * Render class to canvas. Display properties and methods;
@@ -278,10 +256,9 @@ var ClassCanvasAPI = /** @class */ (function (_super) {
         this.canvas.appendChild(methodContainer);
     };
     ClassCanvasAPI.prototype.dropElement = function (elementData, event) {
-        var position = this.onDragEnd(event), classDataProxy = ClassDataProxy.getInstance();
+        var position = this.onDragEnd(event);
         elementData.x = position.x;
         elementData.y = position.y;
-        classDataProxy.updateClass(this.currentClassData);
     };
     ClassCanvasAPI.prototype.openMethod = function (methodData) {
         var messagingManager = MessagingManager.getInstance();
@@ -295,25 +272,19 @@ var MethodCanvasAPI = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     MethodCanvasAPI.prototype.openMethod = function (methodData) {
-        this.currentMethod = methodData;
         this.renderMethod(methodData);
     };
     MethodCanvasAPI.prototype.closeMethod = function () {
         this.domHelper.removeAllChildren(this.canvas);
-        // save data here to make as less updates as possible
     };
-    MethodCanvasAPI.prototype.addMethodParameter = function (name, x, y) {
-        var parameterData = this.addParameterToMethodData(name, x, y);
-        this.renderMethodParameter(parameterData);
+    MethodCanvasAPI.prototype.addParameter = function (parameterData) {
+        this.renderParameter(parameterData);
     };
     MethodCanvasAPI.prototype.renderMethod = function (methodData) {
-        console.log('### renderMethod');
+        if (methodData.parameters !== undefined)
+            methodData.parameters.map(this.renderParameter, this);
     };
-    MethodCanvasAPI.prototype.addParameterToMethodData = function (name, x, y) {
-        var newParameter = this.currentMethod.addParameter(name, x, y);
-        return newParameter;
-    };
-    MethodCanvasAPI.prototype.renderMethodParameter = function (parameterData) {
+    MethodCanvasAPI.prototype.renderParameter = function (parameterData) {
         var parameterContainer = this.domHelper.createParameterElement(parameterData.x, parameterData.y);
         parameterContainer.innerText = parameterData.name;
         parameterContainer.draggable = true;
@@ -322,10 +293,9 @@ var MethodCanvasAPI = /** @class */ (function (_super) {
         this.canvas.appendChild(parameterContainer);
     };
     MethodCanvasAPI.prototype.dropElement = function (elementData, event) {
-        var position = this.onDragEnd(event), classDataProxy = ClassDataProxy.getInstance();
+        var position = this.onDragEnd(event);
         elementData.x = position.x;
         elementData.y = position.y;
-        //classDataProxy.updateClass( this.currentClassData );
     };
     return MethodCanvasAPI;
 }(AbstractCanvasAPI));
@@ -439,39 +409,50 @@ var CanvasWrapper = /** @class */ (function (_super) {
         messenger.onMessage(Messages.ADD_METHOD_VARIABLE, this.addMethodVariable.bind(this));
     };
     CanvasWrapper.prototype.addClass = function (className) {
-        this.appCanvasAPI.addClass(className, 100, 100);
+        var classDataProxy = ClassDataProxy.getInstance(), classData = classDataProxy.addClass(className, 100, 100);
+        this.appCanvasAPI.addClass(classData);
     };
     CanvasWrapper.prototype.openClass = function (classData) {
         this.appCanvas.hidden = true;
         this.classCanvas.hidden = false;
         this.classCanvasAPI.openClass(classData);
+        this.openedClass = classData;
     };
     CanvasWrapper.prototype.closeClass = function () {
         this.appCanvas.hidden = false;
         this.classCanvas.hidden = true;
         this.classCanvasAPI.closeClass();
+        this.save();
     };
     CanvasWrapper.prototype.addClassProperty = function (propertyName) {
-        this.classCanvasAPI.addProperty(propertyName, 100, 100);
+        var newProperty = this.openedClass.addProperty(propertyName, 100, 100);
+        this.classCanvasAPI.addProperty(newProperty);
     };
     CanvasWrapper.prototype.addClassMethod = function (methodName) {
-        this.classCanvasAPI.addMethod(methodName, 100, 100);
+        var newMethod = this.openedClass.addMethod(methodName, 100, 100);
+        this.classCanvasAPI.addMethod(newMethod);
     };
     CanvasWrapper.prototype.openMethod = function (methodData) {
         this.classCanvas.hidden = true;
         this.methodCanvas.hidden = false;
         this.methodCanvasAPI.openMethod(methodData);
+        this.openedMethod = methodData;
     };
     CanvasWrapper.prototype.closeMethod = function () {
         this.methodCanvas.hidden = true;
         this.classCanvas.hidden = false;
         this.methodCanvasAPI.closeMethod();
+        this.save();
     };
     CanvasWrapper.prototype.addMethodParameter = function (parameterName) {
-        this.methodCanvasAPI.addMethodParameter(parameterName, 100, 100);
+        var newParameter = this.openedMethod.addParameter(parameterName, 100, 100);
+        this.methodCanvasAPI.addParameter(newParameter);
     };
     CanvasWrapper.prototype.addMethodVariable = function (variableName) {
         //this.methodCanvasAPI.addMethodVariable( variableName, 100, 100 );
+    };
+    CanvasWrapper.prototype.save = function () {
+        // ClassDataProxy.getInstance().updateClass( this.openedClass );
     };
     return CanvasWrapper;
 }(AbstractWrapper));
@@ -714,6 +695,13 @@ var MethodData = /** @class */ (function (_super) {
         _this.isPrivate = isPrivate;
         return _this;
     }
+    Object.defineProperty(MethodData.prototype, "parameters", {
+        get: function () {
+            return this._parameters;
+        },
+        enumerable: true,
+        configurable: true
+    });
     MethodData.prototype.addParameter = function (parameterName, x, y) {
         if (this._parameters === undefined) {
             this._parameters = [];

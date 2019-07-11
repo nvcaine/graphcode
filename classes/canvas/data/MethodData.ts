@@ -11,6 +11,10 @@ class MethodData extends AbstractCanvasData {
         this.isPrivate = isPrivate;
     }
 
+    public get parameters(): PropertyData[] {
+        return this._parameters;
+    }
+
     public addParameter( parameterName: string, x: number, y: number ): PropertyData {
 
         if ( this._parameters === undefined ) {

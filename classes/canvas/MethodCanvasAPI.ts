@@ -1,38 +1,27 @@
 class MethodCanvasAPI extends AbstractCanvasAPI {
 
-    private currentMethod: MethodData;
-
     public openMethod( methodData: MethodData ) {
 
-        this.currentMethod = methodData;
         this.renderMethod( methodData );
     }
 
     public closeMethod() {
 
         this.domHelper.removeAllChildren( this.canvas );
-        // save data here to make as less updates as possible
     }
 
-    public addMethodParameter( name: string, x: number, y: number ) {
+    public addParameter( parameterData: PropertyData ) {
 
-        let parameterData: PropertyData = this.addParameterToMethodData( name, x, y );
-
-        this.renderMethodParameter( parameterData );
+        this.renderParameter( parameterData );
     }
 
     private renderMethod( methodData: MethodData ) {
-        console.log( '### renderMethod' );
+
+        if ( methodData.parameters !== undefined )
+            methodData.parameters.map( this.renderParameter, this );
     }
 
-    private addParameterToMethodData( name: string, x: number, y: number ): PropertyData {
-
-        let newParameter: PropertyData = this.currentMethod.addParameter( name, x, y );
-
-        return newParameter;
-    }
-
-    private renderMethodParameter( parameterData: PropertyData ) {
+    private renderParameter( parameterData: PropertyData ) {
 
         let parameterContainer: HTMLDivElement = this.domHelper.createParameterElement( parameterData.x, parameterData.y );
 
@@ -46,11 +35,9 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
 
     private dropElement( elementData: PropertyData, event: DragEvent ) {
 
-        let position: Vector2 = this.onDragEnd( event ),
-            classDataProxy: ClassDataProxy = ClassDataProxy.getInstance();
+        let position: Vector2 = this.onDragEnd( event );
 
         elementData.x = position.x;
         elementData.y = position.y;
-        //classDataProxy.updateClass( this.currentClassData );
     }
 }
