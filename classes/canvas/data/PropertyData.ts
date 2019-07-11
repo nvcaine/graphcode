@@ -2,12 +2,12 @@
 
 class PropertyData extends AbstractCanvasData {
 
-    public private: boolean;
+    public isPrivate: boolean;
 
-    public constructor( name: string, x: number, y: number ) {
+    public constructor( name: string, x: number, y: number, isPrivate: boolean = false ) {
 
         super( name, x, y );
 
-        this.private = false;
+        this.isPrivate = isPrivate;
     }
 }

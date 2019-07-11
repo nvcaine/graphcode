@@ -55,6 +55,9 @@ class UIWrapper extends AbstractWrapper implements DOMWrapper {
         this.methodInterface.hidden = true;
 
         this.initInterfaceButton( InterfaceButtons.INTERFACE_CLASS_BACK, this.backClassClickHandler, messenger );
+        this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_METHOD_PARAMETER, this.addMethodParameter, messenger );
+        this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_METHOD_VARIABLE, this.addMethodVariable, messenger );
+
     }
 
     /**
@@ -164,5 +167,21 @@ class UIWrapper extends AbstractWrapper implements DOMWrapper {
         let nameSpan: HTMLSpanElement = <HTMLSpanElement> document.getElementById( 'interface-method-name' );
 
         nameSpan.innerHTML = methodData.name;
+    }
+
+    private addMethodParameter( messenger: SimpleMessenger ) {
+
+        let parameterName: string = this.validatedPrompt( 'Enter parameter name', 'newParam' );
+
+        if ( parameterName )
+            messenger.sendMessage( Messages.ADD_METHOD_PARAMETER, parameterName );
+    }
+
+    private addMethodVariable( messenger: SimpleMessenger ) {
+
+        let variableName: string = this.validatedPrompt( 'Enter parameter name', 'newParam' );
+
+        if ( variableName )
+            messenger.sendMessage( Messages.ADD_METHOD_VARIABLE, variableName );
     }
 }

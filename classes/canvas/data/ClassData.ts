@@ -71,5 +71,4 @@ class ClassData extends AbstractCanvasData {
 
         return newMethod;
     }
-
 }

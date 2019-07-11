@@ -95,7 +95,7 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
         methodContainer.draggable = true;
         methodContainer.ondragstart = this.onDragStart.bind( this );
         methodContainer.ondragend = this.dropElement.bind( this, methodData );
-        methodContainer.ondblclick = this.openMethod.bind( this, methodData );
+        methodContainer.ondblclick = this.openMethod.bind( this, methodData, this.currentClassData );
 
         this.canvas.appendChild( methodContainer );
     }

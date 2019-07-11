@@ -84,6 +84,16 @@ var DOMHelper = /** @class */ (function () {
             left: x + 'px'
         });
     };
+    DOMHelper.prototype.createParameterElement = function (x, y) {
+        return this.createDivElement({
+            position: 'absolute',
+            border: '1px solid orange',
+            height: '50px',
+            width: '150px',
+            top: y + 'px',
+            left: x + 'px'
+        });
+    };
     DOMHelper.prototype.removeAllChildren = function (element) {
         while (element.lastChild)
             element.removeChild(element.lastChild);
@@ -119,23 +129,29 @@ var AbstractCanvasAPI = /** @class */ (function () {
      */
     AbstractCanvasAPI.prototype.onDragStart = function (event) {
         var div = event.target, targetRect = div.getBoundingClientRect();
-        this.mouseOffsetData = new Vector2(event.pageX - targetRect.left, event.pageY - targetRect.top // !! magic number
-        );
-        console.log('mouse offset');
-        console.log(this.mouseOffsetData);
+        this.mouseOffset = new Vector2(event.pageX - targetRect.left, event.pageY - targetRect.top);
     };
     /**
      * Update the position of the dragged element on the canvas.
-     * @param event
+     * @param event the drag event
+     * @returns the updated position after the drag
      */
     AbstractCanvasAPI.prototype.onDragEnd = function (event) {
         event.preventDefault();
-        var div = event.target;
-        var result = new Vector2(event.pageX - this.canvasOffset.x - this.mouseOffsetData.x, event.pageY - this.canvasOffset.y - this.mouseOffsetData.y);
-        console.log('drag end');
-        console.log(result);
+        var div = event.target, result = this.getDropPosition(event, this.canvasOffset, this.mouseOffset);
         div.style.left = result.x + 'px';
         div.style.top = result.y + 'px';
+        return result;
+    };
+    /**
+     * Get the global position of a dropped element
+     * @param event the drag event to process
+     * @param canvasOffset the current canvas offset relative to the page
+     * @param mouseOffset the mouse offset relative to the event target's bounds
+     * @returns a vector corresponding to the updated position
+     */
+    AbstractCanvasAPI.prototype.getDropPosition = function (event, canvasOffset, mouseOffset) {
+        var result = new Vector2(event.pageX - canvasOffset.x - mouseOffset.x, event.pageY - canvasOffset.y - mouseOffset.y);
         return result;
     };
     return AbstractCanvasAPI;
@@ -279,13 +295,37 @@ var MethodCanvasAPI = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     MethodCanvasAPI.prototype.openMethod = function (methodData) {
+        this.currentMethod = methodData;
         this.renderMethod(methodData);
     };
     MethodCanvasAPI.prototype.closeMethod = function () {
         this.domHelper.removeAllChildren(this.canvas);
+        // save data here to make as less updates as possible
+    };
+    MethodCanvasAPI.prototype.addMethodParameter = function (name, x, y) {
+        var parameterData = this.addParameterToMethodData(name, x, y);
+        this.renderMethodParameter(parameterData);
     };
     MethodCanvasAPI.prototype.renderMethod = function (methodData) {
         console.log('### renderMethod');
+    };
+    MethodCanvasAPI.prototype.addParameterToMethodData = function (name, x, y) {
+        var newParameter = this.currentMethod.addParameter(name, x, y);
+        return newParameter;
+    };
+    MethodCanvasAPI.prototype.renderMethodParameter = function (parameterData) {
+        var parameterContainer = this.domHelper.createParameterElement(parameterData.x, parameterData.y);
+        parameterContainer.innerText = parameterData.name;
+        parameterContainer.draggable = true;
+        parameterContainer.ondragstart = this.onDragStart.bind(this);
+        parameterContainer.ondragend = this.dropElement.bind(this, parameterData);
+        this.canvas.appendChild(parameterContainer);
+    };
+    MethodCanvasAPI.prototype.dropElement = function (elementData, event) {
+        var position = this.onDragEnd(event), classDataProxy = ClassDataProxy.getInstance();
+        elementData.x = position.x;
+        elementData.y = position.y;
+        //classDataProxy.updateClass( this.currentClassData );
     };
     return MethodCanvasAPI;
 }(AbstractCanvasAPI));
@@ -328,6 +368,8 @@ var Messages = /** @class */ (function () {
     Messages.ADD_CLASS_METHOD = 'add-class-method';
     Messages.OPEN_METHOD = 'open-method';
     Messages.CLOSE_METHOD = 'close-method';
+    Messages.ADD_METHOD_PARAMETER = 'add-method-parameter';
+    Messages.ADD_METHOD_VARIABLE = 'add-method-variable';
     return Messages;
 }());
 /// <reference path="./AbstractWrapper.ts" />
@@ -393,6 +435,8 @@ var CanvasWrapper = /** @class */ (function (_super) {
         messenger.onMessage(Messages.ADD_CLASS_METHOD, this.addClassMethod.bind(this));
         messenger.onMessage(Messages.OPEN_METHOD, this.openMethod.bind(this));
         messenger.onMessage(Messages.CLOSE_METHOD, this.closeMethod.bind(this));
+        messenger.onMessage(Messages.ADD_METHOD_PARAMETER, this.addMethodParameter.bind(this));
+        messenger.onMessage(Messages.ADD_METHOD_VARIABLE, this.addMethodVariable.bind(this));
     };
     CanvasWrapper.prototype.addClass = function (className) {
         this.appCanvasAPI.addClass(className, 100, 100);
@@ -423,6 +467,12 @@ var CanvasWrapper = /** @class */ (function (_super) {
         this.classCanvas.hidden = false;
         this.methodCanvasAPI.closeMethod();
     };
+    CanvasWrapper.prototype.addMethodParameter = function (parameterName) {
+        this.methodCanvasAPI.addMethodParameter(parameterName, 100, 100);
+    };
+    CanvasWrapper.prototype.addMethodVariable = function (variableName) {
+        //this.methodCanvasAPI.addMethodVariable( variableName, 100, 100 );
+    };
     return CanvasWrapper;
 }(AbstractWrapper));
 var InterfaceButtons = /** @class */ (function () {
@@ -433,6 +483,8 @@ var InterfaceButtons = /** @class */ (function () {
     InterfaceButtons.INTERFACE_ADD_CLASS_PROPERTY = 'interface-class-add-property';
     InterfaceButtons.INTERFACE_ADD_CLASS_METHOD = 'interface-class-add-method';
     InterfaceButtons.INTERFACE_CLASS_BACK = 'interface-class-back';
+    InterfaceButtons.INTERFACE_ADD_METHOD_PARAMETER = 'interface-add-method-parameter';
+    InterfaceButtons.INTERFACE_ADD_METHOD_VARIABLE = 'interface-add-method-variable';
     return InterfaceButtons;
 }());
 var AbstractCanvasData = /** @class */ (function () {
@@ -542,6 +594,8 @@ var UIWrapper = /** @class */ (function (_super) {
         this.methodInterface = this.getElementById(DOMContainers.METHOD_INTERFACE);
         this.methodInterface.hidden = true;
         this.initInterfaceButton(InterfaceButtons.INTERFACE_CLASS_BACK, this.backClassClickHandler, messenger);
+        this.initInterfaceButton(InterfaceButtons.INTERFACE_ADD_METHOD_PARAMETER, this.addMethodParameter, messenger);
+        this.initInterfaceButton(InterfaceButtons.INTERFACE_ADD_METHOD_VARIABLE, this.addMethodVariable, messenger);
     };
     /**
      * Get an element by its id and attach a click handler
@@ -619,6 +673,16 @@ var UIWrapper = /** @class */ (function (_super) {
         var nameSpan = document.getElementById('interface-method-name');
         nameSpan.innerHTML = methodData.name;
     };
+    UIWrapper.prototype.addMethodParameter = function (messenger) {
+        var parameterName = this.validatedPrompt('Enter parameter name', 'newParam');
+        if (parameterName)
+            messenger.sendMessage(Messages.ADD_METHOD_PARAMETER, parameterName);
+    };
+    UIWrapper.prototype.addMethodVariable = function (messenger) {
+        var variableName = this.validatedPrompt('Enter parameter name', 'newParam');
+        if (variableName)
+            messenger.sendMessage(Messages.ADD_METHOD_VARIABLE, variableName);
+    };
     return UIWrapper;
 }(AbstractWrapper));
 /// <reference path="./dom/CanvasWrapper.ts" />
@@ -644,19 +708,29 @@ var Application = /** @class */ (function () {
 Application.run();
 var MethodData = /** @class */ (function (_super) {
     __extends(MethodData, _super);
-    function MethodData(name, x, y) {
+    function MethodData(name, x, y, isPrivate) {
+        if (isPrivate === void 0) { isPrivate = false; }
         var _this = _super.call(this, name, x, y) || this;
-        _this.private = false;
+        _this.isPrivate = isPrivate;
         return _this;
     }
+    MethodData.prototype.addParameter = function (parameterName, x, y) {
+        if (this._parameters === undefined) {
+            this._parameters = [];
+        }
+        var newProperty = new PropertyData(parameterName, x, y);
+        this._parameters.push(newProperty);
+        return newProperty;
+    };
     return MethodData;
 }(AbstractCanvasData));
 /// <reference path='./AbstractCanvasData.ts' />
 var PropertyData = /** @class */ (function (_super) {
     __extends(PropertyData, _super);
-    function PropertyData(name, x, y) {
+    function PropertyData(name, x, y, isPrivate) {
+        if (isPrivate === void 0) { isPrivate = false; }
         var _this = _super.call(this, name, x, y) || this;
-        _this.private = false;
+        _this.isPrivate = isPrivate;
         return _this;
     }
     return PropertyData;
