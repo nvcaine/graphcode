@@ -1,174 +1,62 @@
-/// <reference path="./AbstractWrapper.ts" />
+class CanvasWrapper implements DOMWrapper {
 
-/// <reference path="./consts/DOMContainers.ts" />
-
-/// <reference path="../canvas/AppCanvasAPI.ts" />
-/// <reference path="../canvas/ClassCanvasAPI.ts" />
-/// <reference path="../canvas/MethodCanvasAPI.ts" />
-
-/// <reference path="../messaging/MessagingManager.ts" />
-/// <reference path="../messaging/consts/Messages.ts" />
-
-class CanvasWrapper extends AbstractWrapper implements DOMWrapper {
-
-    private appCanvas: HTMLDivElement;
-    private classCanvas: HTMLDivElement;
-    private methodCanvas: HTMLDivElement;
-
-    private appCanvasAPI: AppCanvasAPI;
-    private classCanvasAPI: ClassCanvasAPI;
-    private methodCanvasAPI: MethodCanvasAPI;
-
-    private openedClass: ClassData;
-    private openedMethod: MethodData;
+    private appCanvas: AppCanvasWrapper;
+    private classCanvas: ClassCanvasWrapper;
+    private methodCanvas: MethodCanvasWrapper;
 
     public init( messenger: SimpleMessenger ) {
 
-        try {
-            this.initCanvases( messenger );
-        } catch ( error ) {
-            console.error( error.message );
-        }
-    }
-
-    private initCanvases( messenger: SimpleMessenger ) {
-
-        this.initDOMElements();
-        this.initAPIs();
-        this.initMessagingContainer( messenger );
-
-        console.log( '## Canvas wrapper initialized' );
-    }
-
-    private initDOMElements() {
-
         let domRect: ClientRect = document.body.getBoundingClientRect();
 
-        this.appCanvas = this.initCanvasElement( DOMContainers.APP_CANVAS, domRect );
-        this.classCanvas = this.initCanvasElement( DOMContainers.CLASS_CANVAS, domRect );
-        this.methodCanvas = this.initCanvasElement( DOMContainers.METHOD_CANVAS, domRect );
+        this.appCanvas = new AppCanvasWrapper( DOMContainers.APP_CANVAS, domRect );
+        this.appCanvas.hide();
 
-        console.log( '## Canvases initialized: ' + this.appCanvas.style.width + ' ' + this.appCanvas.style.height );
+        this.classCanvas = new ClassCanvasWrapper( DOMContainers.CLASS_CANVAS, domRect );
+        this.classCanvas.hide();
 
-    }
+        this.methodCanvas = new MethodCanvasWrapper( DOMContainers.METHOD_CANVAS, domRect );
+        this.methodCanvas.hide();
 
-    /**
-     * Get an HTML element and resize it to fit the specified dimentions
-     * @param id the id of the HTML canvas element
-     * @param domRect the dimentions used to update the canvas
-     * @returns the initialized element
-     */
-    private initCanvasElement( id: string, domRect: ClientRect ): HTMLDivElement {
+        this.appCanvas.show();
 
-        let canvas: HTMLDivElement = <HTMLDivElement> this.getElementById( id );
-
-        canvas.style.width = domRect.width + 'px';
-        canvas.style.height = domRect.height + 'px';
-        canvas.style.position = 'relative';
-
-        return canvas;
-    }
-
-    private initAPIs() {
-
-        this.appCanvasAPI = new AppCanvasAPI( this.appCanvas );
-        this.appCanvas.hidden = true; // hide the app canvas in order to correctly initalize the class canvas
-
-        this.classCanvasAPI = new ClassCanvasAPI( this.classCanvas ); // correctly positioned for getting the offsets
-        this.classCanvas.hidden = true;
-
-        this.methodCanvasAPI = new MethodCanvasAPI( this.methodCanvas );
-        this.methodCanvas.hidden = true;
-
-        this.appCanvas.hidden = false;
+        this.initMessagingContainer( messenger );
     }
 
     private initMessagingContainer( messenger: SimpleMessenger ) {
 
-        messenger.onMessage( Messages.ADD_CLASS, this.addClass.bind( this ) );
         messenger.onMessage( Messages.OPEN_CLASS, this.openClass.bind( this ) );
         messenger.onMessage( Messages.CLOSE_CLASS, this.closeClass.bind( this ) );
 
-        messenger.onMessage( Messages.ADD_CLASS_PROPERTY, this.addClassProperty.bind( this ) );
-        messenger.onMessage( Messages.ADD_CLASS_METHOD, this.addClassMethod.bind( this ) );
-
         messenger.onMessage( Messages.OPEN_METHOD, this.openMethod.bind( this ) );
         messenger.onMessage( Messages.CLOSE_METHOD, this.closeMethod.bind( this ) );
-        messenger.onMessage( Messages.ADD_METHOD_PARAMETER, this.addMethodParameter.bind( this ) );
-        messenger.onMessage( Messages.ADD_METHOD_VARIABLE, this.addMethodVariable.bind( this ) );
     }
 
-    private addClass( className: any ) {
+    private openClass() {
 
-        let classDataProxy: ClassDataProxy = ClassDataProxy.getInstance(),
-            classData: ClassData = classDataProxy.addClass( className, 100, 100 );
-
-        this.appCanvasAPI.addClass( classData );
-    }
-
-    private openClass( classData: ClassData ) {
-
-        this.appCanvas.hidden = true;
-        this.classCanvas.hidden = false;
-
-        this.classCanvasAPI.openClass( classData );
-
-        this.openedClass = classData;
+        this.appCanvas.hide()
+        this.classCanvas.show();
     }
 
     private closeClass() {
 
-        this.appCanvas.hidden = false;
-        this.classCanvas.hidden = true;
-        this.classCanvasAPI.closeClass();
+        this.classCanvas.hide();
+        this.appCanvas.show()
 
         this.save();
     }
 
-    private addClassProperty( propertyName: any ) {
+    private openMethod() {
 
-        let newProperty: PropertyData = this.openedClass.addProperty( propertyName, 100, 100 );
-
-        this.classCanvasAPI.addProperty( newProperty );
-    }
-
-    private addClassMethod( methodName: any ) {
-
-        let newMethod: MethodData = this.openedClass.addMethod( methodName, 100, 100 );
-
-        this.classCanvasAPI.addMethod( newMethod );
-    }
-
-    private openMethod( methodData: MethodData ) {
-
-        this.classCanvas.hidden = true;
-        this.methodCanvas.hidden = false;
-
-        this.methodCanvasAPI.openMethod( methodData );
-
-        this.openedMethod = methodData;
+        this.classCanvas.hide();
+        this.methodCanvas.show();
     }
 
     private closeMethod() {
 
-        this.methodCanvas.hidden = true;
-        this.classCanvas.hidden = false;
-
-        this.methodCanvasAPI.closeMethod();
+        this.methodCanvas.hide();
+        this.classCanvas.show();
 
         this.save();
-    }
-
-    private addMethodParameter( parameterName: any ) {
-
-        let newParameter: PropertyData = this.openedMethod.addParameter( parameterName, 100, 100 );
-
-        this.methodCanvasAPI.addParameter( newParameter );
-    }
-
-    private addMethodVariable( variableName: any ) {
-
-        //this.methodCanvasAPI.addMethodVariable( variableName, 100, 100 );
     }
 
     private save() {

@@ -1,5 +1,3 @@
-/// <reference path='./AbstractCanvasData.ts' />
-
 class PropertyData extends AbstractCanvasData {
 
     public isPrivate: boolean;

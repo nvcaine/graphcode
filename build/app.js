@@ -11,17 +11,177 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var AbstractWrapper = /** @class */ (function () {
-    function AbstractWrapper() {
+var CanvasWrapper = /** @class */ (function () {
+    function CanvasWrapper() {
     }
-    AbstractWrapper.prototype.getElementById = function (id) {
-        var result;
-        result = document.getElementById(id);
-        if (result === null)
-            throw new Error('Element with id \'' + id + '\' not found.');
+    CanvasWrapper.prototype.init = function (messenger) {
+        var domRect = document.body.getBoundingClientRect();
+        this.appCanvas = new AppCanvasWrapper(DOMContainers.APP_CANVAS, domRect);
+        this.appCanvas.hide();
+        this.classCanvas = new ClassCanvasWrapper(DOMContainers.CLASS_CANVAS, domRect);
+        this.classCanvas.hide();
+        this.methodCanvas = new MethodCanvasWrapper(DOMContainers.METHOD_CANVAS, domRect);
+        this.methodCanvas.hide();
+        this.appCanvas.show();
+        this.initMessagingContainer(messenger);
+    };
+    CanvasWrapper.prototype.initMessagingContainer = function (messenger) {
+        messenger.onMessage(Messages.OPEN_CLASS, this.openClass.bind(this));
+        messenger.onMessage(Messages.CLOSE_CLASS, this.closeClass.bind(this));
+        messenger.onMessage(Messages.OPEN_METHOD, this.openMethod.bind(this));
+        messenger.onMessage(Messages.CLOSE_METHOD, this.closeMethod.bind(this));
+    };
+    CanvasWrapper.prototype.openClass = function (classData) {
+        this.appCanvas.hide();
+        this.classCanvas.show();
+    };
+    CanvasWrapper.prototype.closeClass = function () {
+        this.classCanvas.hide();
+        this.appCanvas.show();
+        this.save();
+    };
+    CanvasWrapper.prototype.openMethod = function (methodData) {
+        this.classCanvas.hide();
+        this.methodCanvas.show();
+    };
+    CanvasWrapper.prototype.closeMethod = function () {
+        this.methodCanvas.hide();
+        this.classCanvas.show();
+        this.save();
+    };
+    CanvasWrapper.prototype.save = function () {
+        // ClassDataProxy.getInstance().updateClass( this.openedClass );
+    };
+    return CanvasWrapper;
+}());
+var UIWrapper = /** @class */ (function () {
+    function UIWrapper() {
+    }
+    UIWrapper.prototype.init = function (messenger) {
+        this.domHelper = new DOMHelper();
+        try {
+            this.initInterfaces(messenger);
+            this.initMessages(messenger);
+        }
+        catch (error) {
+            console.error(error.message);
+        }
+    };
+    UIWrapper.prototype.initInterfaces = function (messenger) {
+        this.initAppInterface(messenger);
+        this.initClassInterface(messenger);
+        this.initMethodInterface(messenger);
+        console.log('## Interface initalized');
+    };
+    UIWrapper.prototype.initMessages = function (messenger) {
+        messenger.onMessage(Messages.OPEN_CLASS, this.openClass.bind(this));
+        messenger.onMessage(Messages.OPEN_METHOD, this.openMethod.bind(this));
+    };
+    UIWrapper.prototype.initAppInterface = function (messenger) {
+        this.appInterface = this.domHelper.getElementById(DOMContainers.APP_INTERFACE);
+        this.initInterfaceButton(InterfaceButtons.INTERFACE_ADD_CLASS, this.addClassClickHandler, messenger);
+        this.initInterfaceButton(InterfaceButtons.INTERFACE_BACK, this.backClickHandler, messenger);
+    };
+    UIWrapper.prototype.initClassInterface = function (messenger) {
+        this.classInterface = this.domHelper.getElementById(DOMContainers.CLASS_INTERFACE);
+        this.classInterface.hidden = true;
+        this.initInterfaceButton(InterfaceButtons.INTERFACE_ADD_CLASS_PROPERTY, this.addPropertyClickHandler, messenger);
+        this.initInterfaceButton(InterfaceButtons.INTERFACE_ADD_CLASS_METHOD, this.addMethodClickHandler, messenger);
+    };
+    UIWrapper.prototype.initMethodInterface = function (messenger) {
+        this.methodInterface = this.domHelper.getElementById(DOMContainers.METHOD_INTERFACE);
+        this.methodInterface.hidden = true;
+        this.initInterfaceButton(InterfaceButtons.INTERFACE_CLASS_BACK, this.backClassClickHandler, messenger);
+        this.initInterfaceButton(InterfaceButtons.INTERFACE_ADD_METHOD_PARAMETER, this.addMethodParameter, messenger);
+        this.initInterfaceButton(InterfaceButtons.INTERFACE_ADD_METHOD_VARIABLE, this.addMethodVariable, messenger);
+    };
+    /**
+     * Get an element by its id and attach a click handler
+     * @param buttonId the id of the DOM element corresponding to the button
+     * @param handler the click handler
+     * @returns a refference to the button
+     * @throws
+     */
+    UIWrapper.prototype.initInterfaceButton = function (buttonId, handler, m) {
+        var buttonElement = this.domHelper.getElementById(buttonId);
+        buttonElement.onclick = handler.bind(this, m);
+        return buttonElement;
+    };
+    /**
+     * Allow user to cancel a prompt and optionally warn if empty value entered
+     * @param message The prompt message
+     * @param defaultValue
+     * @param warnIfEmpty if the user enters an empty value, display a warning if set to true
+     */
+    UIWrapper.prototype.validatedPrompt = function (message, defaultValue, warnIfEmpty) {
+        if (warnIfEmpty === void 0) { warnIfEmpty = true; }
+        var result = prompt(message, defaultValue);
+        if (result === null) {
+            return null; // user cancelled
+        }
+        result = result.replace(/\s+/g, '');
+        if (result.length === 0 && warnIfEmpty) {
+            console.warn('Cannot add a class without a name.');
+            return null;
+        }
         return result;
     };
-    return AbstractWrapper;
+    UIWrapper.prototype.addClassClickHandler = function (messenger) {
+        var newClassName = this.validatedPrompt('Enter class name', 'NewClass');
+        if (newClassName)
+            messenger.sendMessage(Messages.ADD_CLASS, newClassName);
+    };
+    // !! remove class data reference
+    UIWrapper.prototype.openClass = function (messageData) {
+        this.appInterface.hidden = true;
+        this.classInterface.hidden = false;
+        this.renderClass(messageData);
+    };
+    // !! handle in a different manner
+    UIWrapper.prototype.renderClass = function (classData) {
+        var nameSpan = document.getElementById('interface-class-name');
+        nameSpan.innerHTML = classData.name;
+    };
+    UIWrapper.prototype.backClickHandler = function (messenger) {
+        messenger.sendMessage(Messages.CLOSE_CLASS, undefined);
+        this.appInterface.hidden = false;
+        this.classInterface.hidden = true;
+    };
+    UIWrapper.prototype.addPropertyClickHandler = function (messenger) {
+        var propertyName = this.validatedPrompt('Enter property name', 'newProperty');
+        if (propertyName)
+            messenger.sendMessage(Messages.ADD_CLASS_PROPERTY, propertyName);
+    };
+    UIWrapper.prototype.addMethodClickHandler = function (messenger) {
+        var methodName = this.validatedPrompt('Enter method name', 'newMethod');
+        if (methodName)
+            messenger.sendMessage(Messages.ADD_CLASS_METHOD, methodName);
+    };
+    UIWrapper.prototype.openMethod = function (methodData) {
+        this.classInterface.hidden = true;
+        this.methodInterface.hidden = false;
+        this.renderMethod(methodData);
+    };
+    UIWrapper.prototype.backClassClickHandler = function (messenger) {
+        messenger.sendMessage(Messages.CLOSE_METHOD, undefined);
+        this.methodInterface.hidden = true;
+        this.classInterface.hidden = false;
+    };
+    UIWrapper.prototype.renderMethod = function (methodData) {
+        var nameSpan = document.getElementById('interface-method-name');
+        nameSpan.innerHTML = methodData.name;
+    };
+    UIWrapper.prototype.addMethodParameter = function (messenger) {
+        var parameterName = this.validatedPrompt('Enter parameter name', 'newParam');
+        if (parameterName)
+            messenger.sendMessage(Messages.ADD_METHOD_PARAMETER, parameterName);
+    };
+    UIWrapper.prototype.addMethodVariable = function (messenger) {
+        var variableName = this.validatedPrompt('Enter parameter name', 'newParam');
+        if (variableName)
+            messenger.sendMessage(Messages.ADD_METHOD_VARIABLE, variableName);
+    };
+    return UIWrapper;
 }());
 var DOMContainers = /** @class */ (function () {
     function DOMContainers() {
@@ -34,81 +194,120 @@ var DOMContainers = /** @class */ (function () {
     DOMContainers.METHOD_INTERFACE = 'method-interface';
     return DOMContainers;
 }());
-var Vector2 = /** @class */ (function () {
-    function Vector2(x, y) {
-        this._x = x;
-        this._y = y;
+var AbstractCanvasWrapper = /** @class */ (function () {
+    function AbstractCanvasWrapper(canvasId, apiType) {
+        this.domHelper = new DOMHelper();
+        this.canvas = this.domHelper.getElementById(canvasId);
+        this.api = new apiType(this.canvas);
     }
-    Object.defineProperty(Vector2.prototype, "x", {
-        get: function () { return this._x; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Vector2.prototype, "y", {
-        get: function () { return this._y; },
-        enumerable: true,
-        configurable: true
-    });
-    return Vector2;
+    AbstractCanvasWrapper.prototype.show = function () {
+        this.canvas.hidden = false;
+    };
+    AbstractCanvasWrapper.prototype.hide = function () {
+        this.canvas.hidden = true;
+    };
+    AbstractCanvasWrapper.prototype.initCanvasElement = function (id, domRect) {
+        var canvas = this.domHelper.getElementById(id);
+        canvas.style.width = domRect.width + 'px';
+        canvas.style.height = domRect.height + 'px';
+        canvas.style.position = 'relative';
+        return canvas;
+    };
+    return AbstractCanvasWrapper;
 }());
-var DOMHelper = /** @class */ (function () {
-    function DOMHelper() {
+var AppCanvasWrapper = /** @class */ (function (_super) {
+    __extends(AppCanvasWrapper, _super);
+    function AppCanvasWrapper(canvasId, domRect) {
+        var _this = _super.call(this, canvasId, AppCanvasAPI) || this;
+        try {
+            _this.initCanvasElement(canvasId, domRect);
+            _this.initMessages(MessagingManager.getInstance()); // tight coupling
+        }
+        catch (error) {
+            console.warn('Caught error: ' + error.message);
+        }
+        return _this;
     }
-    DOMHelper.prototype.createClassElement = function (x, y) {
-        return this.createDivElement({
-            position: 'absolute',
-            border: '1px solid black',
-            height: '50px',
-            width: '150px',
-            top: y + 'px',
-            left: x + 'px'
-        });
+    AppCanvasWrapper.prototype.initMessages = function (messenger) {
+        messenger.onMessage(Messages.ADD_CLASS, this.addClass.bind(this));
     };
-    DOMHelper.prototype.createPropertyElement = function (x, y) {
-        return this.createDivElement({
-            position: 'absolute',
-            border: '1px solid blue',
-            height: '50px',
-            width: '150px',
-            top: y + 'px',
-            left: x + 'px'
-        });
+    AppCanvasWrapper.prototype.addClass = function (className) {
+        var classDataProxy = ClassDataProxy.getInstance(), classData = classDataProxy.addClass(className, 100, 100);
+        this.api.addClass(classData);
     };
-    DOMHelper.prototype.createMethodElement = function (x, y) {
-        return this.createDivElement({
-            position: 'absolute',
-            border: '1px solid red',
-            height: '50px',
-            width: '150px',
-            top: y + 'px',
-            left: x + 'px'
-        });
+    return AppCanvasWrapper;
+}(AbstractCanvasWrapper));
+var ClassCanvasWrapper = /** @class */ (function (_super) {
+    __extends(ClassCanvasWrapper, _super);
+    function ClassCanvasWrapper(canvasId, domRect) {
+        var _this = _super.call(this, canvasId, ClassCanvasAPI) || this;
+        try {
+            _this.initCanvasElement(canvasId, domRect);
+            _this.initMessages(MessagingManager.getInstance()); // tight coupling
+        }
+        catch (error) {
+            console.warn('Caught error: ' + error.message);
+        }
+        return _this;
+    }
+    ClassCanvasWrapper.prototype.initMessages = function (messenger) {
+        messenger.onMessage(Messages.OPEN_CLASS, this.openClass.bind(this));
+        messenger.onMessage(Messages.CLOSE_CLASS, this.closeClass.bind(this));
+        messenger.onMessage(Messages.ADD_CLASS_PROPERTY, this.addClassProperty.bind(this));
+        messenger.onMessage(Messages.ADD_CLASS_METHOD, this.addClassMethod.bind(this));
     };
-    DOMHelper.prototype.createParameterElement = function (x, y) {
-        return this.createDivElement({
-            position: 'absolute',
-            border: '1px solid orange',
-            height: '50px',
-            width: '150px',
-            top: y + 'px',
-            left: x + 'px'
-        });
+    ClassCanvasWrapper.prototype.openClass = function (classData) {
+        this.currentClass = classData;
+        this.api.openClass(classData);
     };
-    DOMHelper.prototype.removeAllChildren = function (element) {
-        while (element.lastChild)
-            element.removeChild(element.lastChild);
+    ClassCanvasWrapper.prototype.closeClass = function () {
+        this.api.closeClass();
     };
-    DOMHelper.prototype.createDivElement = function (style) {
-        var result = document.createElement('div'), keys = Object.keys(style);
-        keys.map(function (value) {
-            result.style[value] = style[value];
-        });
-        return result;
+    ClassCanvasWrapper.prototype.addClassProperty = function (propertyName) {
+        var newProperty = this.currentClass.addProperty(propertyName, 100, 100);
+        this.api.addProperty(newProperty);
     };
-    return DOMHelper;
-}());
-/// <reference path='./data/Vector2.ts' />
-/// <reference path='./helpers/DOMHelper.ts' />
+    ClassCanvasWrapper.prototype.addClassMethod = function (methodName) {
+        var newMethod = this.currentClass.addMethod(methodName, 100, 100);
+        this.api.addMethod(newMethod);
+    };
+    return ClassCanvasWrapper;
+}(AbstractCanvasWrapper));
+var MethodCanvasWrapper = /** @class */ (function (_super) {
+    __extends(MethodCanvasWrapper, _super);
+    function MethodCanvasWrapper(canvasId, domRect) {
+        var _this = _super.call(this, canvasId, MethodCanvasAPI) || this;
+        try {
+            _this.initCanvasElement(canvasId, domRect);
+            _this.initMessages(MessagingManager.getInstance()); // tight coupling
+        }
+        catch (error) {
+            console.warn('Caught error: ' + error.message);
+        }
+        return _this;
+    }
+    MethodCanvasWrapper.prototype.initMessages = function (messenger) {
+        messenger.onMessage(Messages.OPEN_METHOD, this.openMethod.bind(this));
+        messenger.onMessage(Messages.CLOSE_METHOD, this.closeMethod.bind(this));
+        messenger.onMessage(Messages.ADD_METHOD_PARAMETER, this.addMethodParameter.bind(this));
+        messenger.onMessage(Messages.ADD_METHOD_VARIABLE, this.addMethodVariable.bind(this));
+    };
+    MethodCanvasWrapper.prototype.openMethod = function (methodData) {
+        this.currentMethod = methodData;
+        this.api.openMethod(methodData);
+    };
+    MethodCanvasWrapper.prototype.closeMethod = function () {
+        this.api.closeMethod();
+    };
+    MethodCanvasWrapper.prototype.addMethodParameter = function (parameterName) {
+        var newParameter = this.currentMethod.addParameter(parameterName, 100, 100);
+        this.api.addParameter(newParameter);
+    };
+    MethodCanvasWrapper.prototype.addMethodVariable = function (variableName) {
+        //this.methodCanvasAPI.addMethodVariable( variableName, 100, 100 );
+    };
+    return MethodCanvasWrapper;
+}(AbstractCanvasWrapper));
 var AbstractCanvasAPI = /** @class */ (function () {
     /**
      * Initialize the canvas offset and dom helper.
@@ -156,7 +355,6 @@ var AbstractCanvasAPI = /** @class */ (function () {
     };
     return AbstractCanvasAPI;
 }());
-/// <reference path="./AbstractCanvasAPI.ts" />
 var AppCanvasAPI = /** @class */ (function (_super) {
     __extends(AppCanvasAPI, _super);
     function AppCanvasAPI() {
@@ -201,7 +399,6 @@ var AppCanvasAPI = /** @class */ (function (_super) {
     };
     return AppCanvasAPI;
 }(AbstractCanvasAPI));
-/// <reference path="./AbstractCanvasAPI.ts" />
 var ClassCanvasAPI = /** @class */ (function (_super) {
     __extends(ClassCanvasAPI, _super);
     function ClassCanvasAPI() {
@@ -299,175 +496,6 @@ var MethodCanvasAPI = /** @class */ (function (_super) {
     };
     return MethodCanvasAPI;
 }(AbstractCanvasAPI));
-var MessagingManager = /** @class */ (function () {
-    function MessagingManager() {
-        this.registeredHandlers = {};
-    }
-    MessagingManager.getInstance = function () {
-        if (this.instance === undefined)
-            this.instance = new MessagingManager();
-        return this.instance;
-    };
-    MessagingManager.prototype.sendMessage = function (type, data) {
-        for (var messageType in this.registeredHandlers) {
-            if (type == messageType) {
-                (this.registeredHandlers[type]).map(function (currentHandler) {
-                    currentHandler.call(null, data);
-                });
-            }
-        }
-    };
-    MessagingManager.prototype.onMessage = function (type, handler) {
-        if (this.registeredHandlers.hasOwnProperty(type)) {
-            var currentValue = this.registeredHandlers[type];
-            this.registeredHandlers[type] = currentValue.concat(handler);
-        }
-        else {
-            this.registeredHandlers[type] = [handler];
-        }
-    };
-    return MessagingManager;
-}());
-var Messages = /** @class */ (function () {
-    function Messages() {
-    }
-    Messages.ADD_CLASS = 'add-class';
-    Messages.OPEN_CLASS = 'open-class';
-    Messages.CLOSE_CLASS = 'close-class';
-    Messages.ADD_CLASS_PROPERTY = 'add-class-property';
-    Messages.ADD_CLASS_METHOD = 'add-class-method';
-    Messages.OPEN_METHOD = 'open-method';
-    Messages.CLOSE_METHOD = 'close-method';
-    Messages.ADD_METHOD_PARAMETER = 'add-method-parameter';
-    Messages.ADD_METHOD_VARIABLE = 'add-method-variable';
-    return Messages;
-}());
-/// <reference path="./AbstractWrapper.ts" />
-/// <reference path="./consts/DOMContainers.ts" />
-/// <reference path="../canvas/AppCanvasAPI.ts" />
-/// <reference path="../canvas/ClassCanvasAPI.ts" />
-/// <reference path="../canvas/MethodCanvasAPI.ts" />
-/// <reference path="../messaging/MessagingManager.ts" />
-/// <reference path="../messaging/consts/Messages.ts" />
-var CanvasWrapper = /** @class */ (function (_super) {
-    __extends(CanvasWrapper, _super);
-    function CanvasWrapper() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    CanvasWrapper.prototype.init = function (messenger) {
-        try {
-            this.initCanvases(messenger);
-        }
-        catch (error) {
-            console.error(error.message);
-        }
-    };
-    CanvasWrapper.prototype.initCanvases = function (messenger) {
-        this.initDOMElements();
-        this.initAPIs();
-        this.initMessagingContainer(messenger);
-        console.log('## Canvas wrapper initialized');
-    };
-    CanvasWrapper.prototype.initDOMElements = function () {
-        var domRect = document.body.getBoundingClientRect();
-        this.appCanvas = this.initCanvasElement(DOMContainers.APP_CANVAS, domRect);
-        this.classCanvas = this.initCanvasElement(DOMContainers.CLASS_CANVAS, domRect);
-        this.methodCanvas = this.initCanvasElement(DOMContainers.METHOD_CANVAS, domRect);
-        console.log('## Canvases initialized: ' + this.appCanvas.style.width + ' ' + this.appCanvas.style.height);
-    };
-    /**
-     * Get an HTML element and resize it to fit the specified dimentions
-     * @param id the id of the HTML canvas element
-     * @param domRect the dimentions used to update the canvas
-     * @returns the initialized element
-     */
-    CanvasWrapper.prototype.initCanvasElement = function (id, domRect) {
-        var canvas = this.getElementById(id);
-        canvas.style.width = domRect.width + 'px';
-        canvas.style.height = domRect.height + 'px';
-        canvas.style.position = 'relative';
-        return canvas;
-    };
-    CanvasWrapper.prototype.initAPIs = function () {
-        this.appCanvasAPI = new AppCanvasAPI(this.appCanvas);
-        this.appCanvas.hidden = true; // hide the app canvas in order to correctly initalize the class canvas
-        this.classCanvasAPI = new ClassCanvasAPI(this.classCanvas); // correctly positioned for getting the offsets
-        this.classCanvas.hidden = true;
-        this.methodCanvasAPI = new MethodCanvasAPI(this.methodCanvas);
-        this.methodCanvas.hidden = true;
-        this.appCanvas.hidden = false;
-    };
-    CanvasWrapper.prototype.initMessagingContainer = function (messenger) {
-        messenger.onMessage(Messages.ADD_CLASS, this.addClass.bind(this));
-        messenger.onMessage(Messages.OPEN_CLASS, this.openClass.bind(this));
-        messenger.onMessage(Messages.CLOSE_CLASS, this.closeClass.bind(this));
-        messenger.onMessage(Messages.ADD_CLASS_PROPERTY, this.addClassProperty.bind(this));
-        messenger.onMessage(Messages.ADD_CLASS_METHOD, this.addClassMethod.bind(this));
-        messenger.onMessage(Messages.OPEN_METHOD, this.openMethod.bind(this));
-        messenger.onMessage(Messages.CLOSE_METHOD, this.closeMethod.bind(this));
-        messenger.onMessage(Messages.ADD_METHOD_PARAMETER, this.addMethodParameter.bind(this));
-        messenger.onMessage(Messages.ADD_METHOD_VARIABLE, this.addMethodVariable.bind(this));
-    };
-    CanvasWrapper.prototype.addClass = function (className) {
-        var classDataProxy = ClassDataProxy.getInstance(), classData = classDataProxy.addClass(className, 100, 100);
-        this.appCanvasAPI.addClass(classData);
-    };
-    CanvasWrapper.prototype.openClass = function (classData) {
-        this.appCanvas.hidden = true;
-        this.classCanvas.hidden = false;
-        this.classCanvasAPI.openClass(classData);
-        this.openedClass = classData;
-    };
-    CanvasWrapper.prototype.closeClass = function () {
-        this.appCanvas.hidden = false;
-        this.classCanvas.hidden = true;
-        this.classCanvasAPI.closeClass();
-        this.save();
-    };
-    CanvasWrapper.prototype.addClassProperty = function (propertyName) {
-        var newProperty = this.openedClass.addProperty(propertyName, 100, 100);
-        this.classCanvasAPI.addProperty(newProperty);
-    };
-    CanvasWrapper.prototype.addClassMethod = function (methodName) {
-        var newMethod = this.openedClass.addMethod(methodName, 100, 100);
-        this.classCanvasAPI.addMethod(newMethod);
-    };
-    CanvasWrapper.prototype.openMethod = function (methodData) {
-        this.classCanvas.hidden = true;
-        this.methodCanvas.hidden = false;
-        this.methodCanvasAPI.openMethod(methodData);
-        this.openedMethod = methodData;
-    };
-    CanvasWrapper.prototype.closeMethod = function () {
-        this.methodCanvas.hidden = true;
-        this.classCanvas.hidden = false;
-        this.methodCanvasAPI.closeMethod();
-        this.save();
-    };
-    CanvasWrapper.prototype.addMethodParameter = function (parameterName) {
-        var newParameter = this.openedMethod.addParameter(parameterName, 100, 100);
-        this.methodCanvasAPI.addParameter(newParameter);
-    };
-    CanvasWrapper.prototype.addMethodVariable = function (variableName) {
-        //this.methodCanvasAPI.addMethodVariable( variableName, 100, 100 );
-    };
-    CanvasWrapper.prototype.save = function () {
-        // ClassDataProxy.getInstance().updateClass( this.openedClass );
-    };
-    return CanvasWrapper;
-}(AbstractWrapper));
-var InterfaceButtons = /** @class */ (function () {
-    function InterfaceButtons() {
-    }
-    InterfaceButtons.INTERFACE_ADD_CLASS = 'interface-add-class';
-    InterfaceButtons.INTERFACE_BACK = 'interface-back';
-    InterfaceButtons.INTERFACE_ADD_CLASS_PROPERTY = 'interface-class-add-property';
-    InterfaceButtons.INTERFACE_ADD_CLASS_METHOD = 'interface-class-add-method';
-    InterfaceButtons.INTERFACE_CLASS_BACK = 'interface-class-back';
-    InterfaceButtons.INTERFACE_ADD_METHOD_PARAMETER = 'interface-add-method-parameter';
-    InterfaceButtons.INTERFACE_ADD_METHOD_VARIABLE = 'interface-add-method-variable';
-    return InterfaceButtons;
-}());
 var AbstractCanvasData = /** @class */ (function () {
     function AbstractCanvasData(name, x, y) {
         this.name = name;
@@ -476,7 +504,6 @@ var AbstractCanvasData = /** @class */ (function () {
     }
     return AbstractCanvasData;
 }());
-/// <reference path='./AbstractCanvasData.ts' />
 var ClassData = /** @class */ (function (_super) {
     __extends(ClassData, _super);
     function ClassData(name, x, y) {
@@ -535,139 +562,160 @@ var ClassData = /** @class */ (function (_super) {
     };
     return ClassData;
 }(AbstractCanvasData));
-/// <reference path="./consts/DOMContainers.ts" />
-/// <reference path="./consts/InterfaceButtons.ts" />
-/// <reference path="../canvas/data/ClassData.ts" />
-/// <reference path="../messaging/consts/Messages.ts" />
-var UIWrapper = /** @class */ (function (_super) {
-    __extends(UIWrapper, _super);
-    function UIWrapper() {
-        return _super !== null && _super.apply(this, arguments) || this;
+var Vector2 = /** @class */ (function () {
+    function Vector2(x, y) {
+        this._x = x;
+        this._y = y;
     }
-    UIWrapper.prototype.init = function (messenger) {
-        messenger.onMessage(Messages.OPEN_CLASS, this.openClass.bind(this));
-        messenger.onMessage(Messages.OPEN_METHOD, this.openMethod.bind(this));
-        try {
-            this.initInterfaces(messenger);
-        }
-        catch (error) {
-            console.error(error.message);
-        }
-    };
-    UIWrapper.prototype.initInterfaces = function (messenger) {
-        this.initAppInterface(messenger);
-        this.initClassInterface(messenger);
-        this.initMethodInterface(messenger);
-        console.log('## Interface initalized');
-    };
-    UIWrapper.prototype.initAppInterface = function (messenger) {
-        this.appInterface = this.getElementById(DOMContainers.APP_INTERFACE);
-        this.initInterfaceButton(InterfaceButtons.INTERFACE_ADD_CLASS, this.addClassClickHandler, messenger);
-        this.initInterfaceButton(InterfaceButtons.INTERFACE_BACK, this.backClickHandler, messenger);
-    };
-    UIWrapper.prototype.initClassInterface = function (messenger) {
-        this.classInterface = this.getElementById(DOMContainers.CLASS_INTERFACE);
-        this.classInterface.hidden = true;
-        this.initInterfaceButton(InterfaceButtons.INTERFACE_ADD_CLASS_PROPERTY, this.addPropertyClickHandler, messenger);
-        this.initInterfaceButton(InterfaceButtons.INTERFACE_ADD_CLASS_METHOD, this.addMethodClickHandler, messenger);
-    };
-    UIWrapper.prototype.initMethodInterface = function (messenger) {
-        this.methodInterface = this.getElementById(DOMContainers.METHOD_INTERFACE);
-        this.methodInterface.hidden = true;
-        this.initInterfaceButton(InterfaceButtons.INTERFACE_CLASS_BACK, this.backClassClickHandler, messenger);
-        this.initInterfaceButton(InterfaceButtons.INTERFACE_ADD_METHOD_PARAMETER, this.addMethodParameter, messenger);
-        this.initInterfaceButton(InterfaceButtons.INTERFACE_ADD_METHOD_VARIABLE, this.addMethodVariable, messenger);
-    };
-    /**
-     * Get an element by its id and attach a click handler
-     * @param buttonId the id of the DOM element corresponding to the button
-     * @param handler the click handler
-     * @returns a refference to the button
-     * @throws
-     */
-    UIWrapper.prototype.initInterfaceButton = function (buttonId, handler, m) {
-        var buttonElement = this.getElementById(buttonId);
-        buttonElement.onclick = handler.bind(this, m);
-        return buttonElement;
-    };
-    /**
-     * Allow user to cancel a prompt and optionally warn if empty value entered
-     * @param message The prompt message
-     * @param defaultValue
-     * @param warnIfEmpty if the user enters an empty value, display a warning if set to true
-     */
-    UIWrapper.prototype.validatedPrompt = function (message, defaultValue, warnIfEmpty) {
-        if (warnIfEmpty === void 0) { warnIfEmpty = true; }
-        var result = prompt(message, defaultValue);
-        if (result === null) {
-            return null; // user cancelled
-        }
-        result = result.replace(/\s+/g, '');
-        if (result.length === 0 && warnIfEmpty) {
-            console.warn('Cannot add a class without a name.');
-            return null;
-        }
+    Object.defineProperty(Vector2.prototype, "x", {
+        get: function () { return this._x; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Vector2.prototype, "y", {
+        get: function () { return this._y; },
+        enumerable: true,
+        configurable: true
+    });
+    return Vector2;
+}());
+var DOMHelper = /** @class */ (function () {
+    function DOMHelper() {
+    }
+    DOMHelper.prototype.getElementById = function (id) {
+        var result;
+        result = document.getElementById(id);
+        if (result === null)
+            throw new Error('Element with id \'' + id + '\' not found.');
         return result;
     };
-    UIWrapper.prototype.addClassClickHandler = function (messenger) {
-        var newClassName = this.validatedPrompt('Enter class name', 'NewClass');
-        if (newClassName)
-            messenger.sendMessage(Messages.ADD_CLASS, newClassName);
+    DOMHelper.prototype.createClassElement = function (x, y) {
+        return this.createDivElement({
+            position: 'absolute',
+            border: '1px solid black',
+            height: '50px',
+            width: '150px',
+            top: y + 'px',
+            left: x + 'px'
+        });
     };
-    // !! remove class data reference
-    UIWrapper.prototype.openClass = function (messageData) {
-        this.appInterface.hidden = true;
-        this.classInterface.hidden = false;
-        this.renderClass(messageData);
+    DOMHelper.prototype.createPropertyElement = function (x, y) {
+        return this.createDivElement({
+            position: 'absolute',
+            border: '1px solid blue',
+            height: '50px',
+            width: '150px',
+            top: y + 'px',
+            left: x + 'px'
+        });
     };
-    // !! handle in a different manner
-    UIWrapper.prototype.renderClass = function (classData) {
-        var nameSpan = document.getElementById('interface-class-name');
-        nameSpan.innerHTML = classData.name;
+    DOMHelper.prototype.createMethodElement = function (x, y) {
+        return this.createDivElement({
+            position: 'absolute',
+            border: '1px solid red',
+            height: '50px',
+            width: '150px',
+            top: y + 'px',
+            left: x + 'px'
+        });
     };
-    UIWrapper.prototype.backClickHandler = function (messenger) {
-        messenger.sendMessage(Messages.CLOSE_CLASS, undefined);
-        this.appInterface.hidden = false;
-        this.classInterface.hidden = true;
+    DOMHelper.prototype.createParameterElement = function (x, y) {
+        return this.createDivElement({
+            position: 'absolute',
+            border: '1px solid orange',
+            height: '50px',
+            width: '150px',
+            top: y + 'px',
+            left: x + 'px'
+        });
     };
-    UIWrapper.prototype.addPropertyClickHandler = function (messenger) {
-        var propertyName = this.validatedPrompt('Enter property name', 'newProperty');
-        if (propertyName)
-            messenger.sendMessage(Messages.ADD_CLASS_PROPERTY, propertyName);
+    DOMHelper.prototype.removeAllChildren = function (element) {
+        while (element.lastChild)
+            element.removeChild(element.lastChild);
     };
-    UIWrapper.prototype.addMethodClickHandler = function (messenger) {
-        var methodName = this.validatedPrompt('Enter method name', 'newMethod');
-        if (methodName)
-            messenger.sendMessage(Messages.ADD_CLASS_METHOD, methodName);
+    DOMHelper.prototype.createDivElement = function (style) {
+        var result = document.createElement('div'), keys = Object.keys(style);
+        keys.map(function (value) {
+            result.style[value] = style[value];
+        });
+        return result;
     };
-    UIWrapper.prototype.openMethod = function (methodData) {
-        this.classInterface.hidden = true;
-        this.methodInterface.hidden = false;
-        this.renderMethod(methodData);
+    return DOMHelper;
+}());
+var MessagingManager = /** @class */ (function () {
+    function MessagingManager() {
+        this.registeredHandlers = {};
+    }
+    MessagingManager.getInstance = function () {
+        if (this.instance === undefined)
+            this.instance = new MessagingManager();
+        return this.instance;
     };
-    UIWrapper.prototype.backClassClickHandler = function (messenger) {
-        messenger.sendMessage(Messages.CLOSE_METHOD, undefined);
-        this.methodInterface.hidden = true;
-        this.classInterface.hidden = false;
+    MessagingManager.prototype.sendMessage = function (type, data) {
+        for (var messageType in this.registeredHandlers) {
+            if (type == messageType) {
+                (this.registeredHandlers[type]).map(function (currentHandler) {
+                    currentHandler.call(null, data);
+                });
+            }
+        }
     };
-    UIWrapper.prototype.renderMethod = function (methodData) {
-        var nameSpan = document.getElementById('interface-method-name');
-        nameSpan.innerHTML = methodData.name;
+    MessagingManager.prototype.onMessage = function (type, handler) {
+        if (this.registeredHandlers.hasOwnProperty(type)) {
+            var currentValue = this.registeredHandlers[type];
+            this.registeredHandlers[type] = currentValue.concat(handler);
+        }
+        else {
+            this.registeredHandlers[type] = [handler];
+        }
     };
-    UIWrapper.prototype.addMethodParameter = function (messenger) {
-        var parameterName = this.validatedPrompt('Enter parameter name', 'newParam');
-        if (parameterName)
-            messenger.sendMessage(Messages.ADD_METHOD_PARAMETER, parameterName);
-    };
-    UIWrapper.prototype.addMethodVariable = function (messenger) {
-        var variableName = this.validatedPrompt('Enter parameter name', 'newParam');
-        if (variableName)
-            messenger.sendMessage(Messages.ADD_METHOD_VARIABLE, variableName);
-    };
-    return UIWrapper;
-}(AbstractWrapper));
+    return MessagingManager;
+}());
+var Messages = /** @class */ (function () {
+    function Messages() {
+    }
+    Messages.ADD_CLASS = 'add-class';
+    Messages.OPEN_CLASS = 'open-class';
+    Messages.CLOSE_CLASS = 'close-class';
+    Messages.ADD_CLASS_PROPERTY = 'add-class-property';
+    Messages.ADD_CLASS_METHOD = 'add-class-method';
+    Messages.OPEN_METHOD = 'open-method';
+    Messages.CLOSE_METHOD = 'close-method';
+    Messages.ADD_METHOD_PARAMETER = 'add-method-parameter';
+    Messages.ADD_METHOD_VARIABLE = 'add-method-variable';
+    return Messages;
+}());
+var InterfaceButtons = /** @class */ (function () {
+    function InterfaceButtons() {
+    }
+    InterfaceButtons.INTERFACE_ADD_CLASS = 'interface-add-class';
+    InterfaceButtons.INTERFACE_BACK = 'interface-back';
+    InterfaceButtons.INTERFACE_ADD_CLASS_PROPERTY = 'interface-class-add-property';
+    InterfaceButtons.INTERFACE_ADD_CLASS_METHOD = 'interface-class-add-method';
+    InterfaceButtons.INTERFACE_CLASS_BACK = 'interface-class-back';
+    InterfaceButtons.INTERFACE_ADD_METHOD_PARAMETER = 'interface-add-method-parameter';
+    InterfaceButtons.INTERFACE_ADD_METHOD_VARIABLE = 'interface-add-method-variable';
+    return InterfaceButtons;
+}());
 /// <reference path="./dom/CanvasWrapper.ts" />
 /// <reference path="./dom/UIwrapper.ts" />
+/// <reference path="./dom/consts/DOMContainers.ts" />
+/// <reference path="./canvas/wrappers/AbstractCanvasWrapper.ts" />
+/// <reference path="./canvas/wrappers/AppCanvasWrapper.ts" />
+/// <reference path="./canvas/wrappers/ClassCanvasWrapper.ts" />
+/// <reference path="./canvas/wrappers/MethodCanvasWrapper.ts" />
+/// <reference path="./canvas/api/AbstractCanvasAPI.ts" />
+/// <reference path="./canvas/api/AppCanvasAPI.ts" />
+/// <reference path="./canvas/api/ClassCanvasAPI.ts" />
+/// <reference path="./canvas/api/MethodCanvasAPI.ts" />
+/// <reference path='./canvas/data/AbstractCanvasData.ts' />
+/// <reference path="./canvas/data/ClassData.ts" />
+/// <reference path='./canvas/data/Vector2.ts' />
+/// <reference path='./canvas/helpers/DOMHelper.ts' />
+/// <reference path="./messaging/MessagingManager.ts" />
+/// <reference path="./messaging/consts/Messages.ts" />
+/// <reference path="./dom/consts/InterfaceButtons.ts" />
+/// <reference path="includes.ts" />
 var Application = /** @class */ (function () {
     function Application() {
     }
@@ -712,7 +760,6 @@ var MethodData = /** @class */ (function (_super) {
     };
     return MethodData;
 }(AbstractCanvasData));
-/// <reference path='./AbstractCanvasData.ts' />
 var PropertyData = /** @class */ (function (_super) {
     __extends(PropertyData, _super);
     function PropertyData(name, x, y, isPrivate) {

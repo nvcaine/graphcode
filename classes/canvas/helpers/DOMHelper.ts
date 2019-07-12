@@ -1,5 +1,17 @@
 class DOMHelper {
 
+    public getElementById( id: string ): HTMLElement {
+
+        let result: HTMLElement;
+
+        result = document.getElementById( id );
+
+        if ( result === null )
+            throw new Error( 'Element with id \'' + id + '\' not found.' );
+
+        return result;
+    }
+
     public createClassElement( x: number, y: number ): HTMLDivElement {
 
         return this.createDivElement( {

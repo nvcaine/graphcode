@@ -1,5 +1,4 @@
-/// <reference path="./dom/CanvasWrapper.ts" />
-/// <reference path="./dom/UIwrapper.ts" />
+/// <reference path="includes.ts" />
 
 class Application {
 

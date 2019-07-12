@@ -1,5 +1,3 @@
-/// <reference path='./AbstractCanvasData.ts' />
-
 class ClassData extends AbstractCanvasData {
 
     private _id: number;

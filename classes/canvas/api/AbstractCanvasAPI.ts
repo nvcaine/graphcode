@@ -1,7 +1,3 @@
-/// <reference path='./data/Vector2.ts' />
-
-/// <reference path='./helpers/DOMHelper.ts' />
-
 abstract class AbstractCanvasAPI {
 
     protected canvas: HTMLDivElement;

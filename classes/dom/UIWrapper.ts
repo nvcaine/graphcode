@@ -1,23 +1,18 @@
-/// <reference path="./consts/DOMContainers.ts" />
-/// <reference path="./consts/InterfaceButtons.ts" />
-
-/// <reference path="../canvas/data/ClassData.ts" />
-
-/// <reference path="../messaging/consts/Messages.ts" />
-
-class UIWrapper extends AbstractWrapper implements DOMWrapper {
+class UIWrapper implements DOMWrapper {
 
     private appInterface: HTMLDivElement;
     private classInterface: HTMLDivElement;
     private methodInterface: HTMLDivElement;
 
+    private domHelper: DOMHelper;
+
     public init( messenger: SimpleMessenger ) {
 
-        messenger.onMessage( Messages.OPEN_CLASS, this.openClass.bind( this ) );
-        messenger.onMessage( Messages.OPEN_METHOD, this.openMethod.bind( this ) );
+        this.domHelper = new DOMHelper();
 
         try {
             this.initInterfaces( messenger );
+            this.initMessages( messenger );
         } catch ( error ) {
             console.error( error.message );
         }
@@ -32,9 +27,15 @@ class UIWrapper extends AbstractWrapper implements DOMWrapper {
         console.log( '## Interface initalized' );
     }
 
+    private initMessages( messenger: SimpleMessenger ) {
+
+        messenger.onMessage( Messages.OPEN_CLASS, this.openClass.bind( this ) );
+        messenger.onMessage( Messages.OPEN_METHOD, this.openMethod.bind( this ) );
+    }
+
     private initAppInterface( messenger: SimpleMessenger ) {
 
-        this.appInterface = <HTMLDivElement> this.getElementById( DOMContainers.APP_INTERFACE );
+        this.appInterface = <HTMLDivElement> this.domHelper.getElementById( DOMContainers.APP_INTERFACE );
 
         this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_CLASS, this.addClassClickHandler, messenger );
         this.initInterfaceButton( InterfaceButtons.INTERFACE_BACK, this.backClickHandler, messenger );
@@ -42,7 +43,7 @@ class UIWrapper extends AbstractWrapper implements DOMWrapper {
 
     private initClassInterface( messenger: SimpleMessenger ) {
 
-        this.classInterface = <HTMLDivElement> this.getElementById( DOMContainers.CLASS_INTERFACE );
+        this.classInterface = <HTMLDivElement> this.domHelper.getElementById( DOMContainers.CLASS_INTERFACE );
         this.classInterface.hidden = true;
 
         this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_CLASS_PROPERTY, this.addPropertyClickHandler, messenger );
@@ -51,7 +52,7 @@ class UIWrapper extends AbstractWrapper implements DOMWrapper {
 
     private initMethodInterface( messenger: SimpleMessenger ) {
 
-        this.methodInterface = <HTMLDivElement> this.getElementById( DOMContainers.METHOD_INTERFACE );
+        this.methodInterface = <HTMLDivElement> this.domHelper.getElementById( DOMContainers.METHOD_INTERFACE );
         this.methodInterface.hidden = true;
 
         this.initInterfaceButton( InterfaceButtons.INTERFACE_CLASS_BACK, this.backClassClickHandler, messenger );
@@ -69,7 +70,7 @@ class UIWrapper extends AbstractWrapper implements DOMWrapper {
      */
     private initInterfaceButton( buttonId: string, handler: ( m: SimpleMessenger ) => void, m: SimpleMessenger ): HTMLButtonElement {
 
-        let buttonElement: HTMLButtonElement = <HTMLButtonElement> this.getElementById( buttonId );
+        let buttonElement: HTMLButtonElement = <HTMLButtonElement> this.domHelper.getElementById( buttonId );
 
         buttonElement.onclick = handler.bind( this, m );
 
