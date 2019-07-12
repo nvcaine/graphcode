@@ -180,7 +180,7 @@ class UIWrapper implements DOMWrapper {
 
     private addMethodVariable( messenger: SimpleMessenger ) {
 
-        let variableName: string = this.validatedPrompt( 'Enter parameter name', 'newParam' );
+        let variableName: string = this.validatedPrompt( 'Enter variable name', 'localVariable' );
 
         if ( variableName )
             messenger.sendMessage( Messages.ADD_METHOD_VARIABLE, variableName );

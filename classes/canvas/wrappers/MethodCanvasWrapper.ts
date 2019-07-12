@@ -43,6 +43,8 @@ class MethodCanvasWrapper extends AbstractCanvasWrapper<MethodCanvasAPI> {
 
     private addMethodVariable( variableName: any ) {
 
-        //this.methodCanvasAPI.addMethodVariable( variableName, 100, 100 );
+        let newVariable: PropertyData = this.currentMethod.addVariable( variableName, 100, 100 );
+
+        this.api.addVariable( newVariable );
     }
 }

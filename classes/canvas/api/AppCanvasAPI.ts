@@ -13,7 +13,14 @@ class AppCanvasAPI extends AbstractCanvasAPI {
 
     private renderClass( classData: ClassData ) {
 
-        let classContainer: HTMLDivElement = this.domHelper.createClassElement( classData.x, classData.y );
+        let classContainer: HTMLDivElement = this.domHelper.createDivElement( {
+            position: 'absolute',
+            border: '1px solid black',
+            height: '50px',
+            width: '150px',
+            top: classData.y + 'px',
+            left: classData.x + 'px'
+        } );
 
         classContainer.innerText = classData.name;
         classContainer.draggable = true;

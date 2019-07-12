@@ -44,7 +44,14 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
 
     private renderProperty( propertyData: PropertyData ) {
 
-        let propertyContainer: HTMLDivElement = this.domHelper.createPropertyElement( propertyData.x, propertyData.y );
+        let propertyContainer: HTMLDivElement = this.domHelper.createDivElement( {
+            position: 'absolute',
+            border: '1px solid blue',
+            height: '50px',
+            width: '150px',
+            top: propertyData.y + 'px',
+            left: propertyData.x + 'px'
+        } );
 
         propertyContainer.innerText = propertyData.name;
         propertyContainer.draggable = true;
@@ -56,7 +63,14 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
 
     private renderMethod( methodData: MethodData ) {
 
-        let methodContainer: HTMLDivElement = this.domHelper.createMethodElement( methodData.x, methodData.y );
+        let methodContainer: HTMLDivElement = this.domHelper.createDivElement( {
+            position: 'absolute',
+            border: '1px solid red',
+            height: '50px',
+            width: '150px',
+            top: methodData.y + 'px',
+            left: methodData.x + 'px'
+        } );
 
         methodContainer.innerText = methodData.name;
         methodContainer.draggable = true;

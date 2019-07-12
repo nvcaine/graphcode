@@ -31,7 +31,7 @@ var CanvasWrapper = /** @class */ (function () {
         messenger.onMessage(Messages.OPEN_METHOD, this.openMethod.bind(this));
         messenger.onMessage(Messages.CLOSE_METHOD, this.closeMethod.bind(this));
     };
-    CanvasWrapper.prototype.openClass = function (classData) {
+    CanvasWrapper.prototype.openClass = function () {
         this.appCanvas.hide();
         this.classCanvas.show();
     };
@@ -40,7 +40,7 @@ var CanvasWrapper = /** @class */ (function () {
         this.appCanvas.show();
         this.save();
     };
-    CanvasWrapper.prototype.openMethod = function (methodData) {
+    CanvasWrapper.prototype.openMethod = function () {
         this.classCanvas.hide();
         this.methodCanvas.show();
     };
@@ -177,7 +177,7 @@ var UIWrapper = /** @class */ (function () {
             messenger.sendMessage(Messages.ADD_METHOD_PARAMETER, parameterName);
     };
     UIWrapper.prototype.addMethodVariable = function (messenger) {
-        var variableName = this.validatedPrompt('Enter parameter name', 'newParam');
+        var variableName = this.validatedPrompt('Enter variable name', 'localVariable');
         if (variableName)
             messenger.sendMessage(Messages.ADD_METHOD_VARIABLE, variableName);
     };
@@ -304,7 +304,8 @@ var MethodCanvasWrapper = /** @class */ (function (_super) {
         this.api.addParameter(newParameter);
     };
     MethodCanvasWrapper.prototype.addMethodVariable = function (variableName) {
-        //this.methodCanvasAPI.addMethodVariable( variableName, 100, 100 );
+        var newVariable = this.currentMethod.addVariable(variableName, 100, 100);
+        this.api.addVariable(newVariable);
     };
     return MethodCanvasWrapper;
 }(AbstractCanvasWrapper));
@@ -370,7 +371,14 @@ var AppCanvasAPI = /** @class */ (function (_super) {
         this.renderClass(classData);
     };
     AppCanvasAPI.prototype.renderClass = function (classData) {
-        var classContainer = this.domHelper.createClassElement(classData.x, classData.y);
+        var classContainer = this.domHelper.createDivElement({
+            position: 'absolute',
+            border: '1px solid black',
+            height: '50px',
+            width: '150px',
+            top: classData.y + 'px',
+            left: classData.x + 'px'
+        });
         classContainer.innerText = classData.name;
         classContainer.draggable = true;
         classContainer.ondragstart = this.onDragStart.bind(this);
@@ -436,7 +444,14 @@ var ClassCanvasAPI = /** @class */ (function (_super) {
             classData.methods.map(this.renderMethod, this);
     };
     ClassCanvasAPI.prototype.renderProperty = function (propertyData) {
-        var propertyContainer = this.domHelper.createPropertyElement(propertyData.x, propertyData.y);
+        var propertyContainer = this.domHelper.createDivElement({
+            position: 'absolute',
+            border: '1px solid blue',
+            height: '50px',
+            width: '150px',
+            top: propertyData.y + 'px',
+            left: propertyData.x + 'px'
+        });
         propertyContainer.innerText = propertyData.name;
         propertyContainer.draggable = true;
         propertyContainer.ondragstart = this.onDragStart.bind(this);
@@ -444,7 +459,14 @@ var ClassCanvasAPI = /** @class */ (function (_super) {
         this.canvas.appendChild(propertyContainer);
     };
     ClassCanvasAPI.prototype.renderMethod = function (methodData) {
-        var methodContainer = this.domHelper.createMethodElement(methodData.x, methodData.y);
+        var methodContainer = this.domHelper.createDivElement({
+            position: 'absolute',
+            border: '1px solid red',
+            height: '50px',
+            width: '150px',
+            top: methodData.y + 'px',
+            left: methodData.x + 'px'
+        });
         methodContainer.innerText = methodData.name;
         methodContainer.draggable = true;
         methodContainer.ondragstart = this.onDragStart.bind(this);
@@ -477,16 +499,43 @@ var MethodCanvasAPI = /** @class */ (function (_super) {
     MethodCanvasAPI.prototype.addParameter = function (parameterData) {
         this.renderParameter(parameterData);
     };
+    MethodCanvasAPI.prototype.addVariable = function (variableData) {
+        this.renderVariable(variableData);
+    };
     MethodCanvasAPI.prototype.renderMethod = function (methodData) {
         if (methodData.parameters !== undefined)
             methodData.parameters.map(this.renderParameter, this);
+        if (methodData.variables !== undefined)
+            methodData.variables.map(this.renderVariable, this);
     };
     MethodCanvasAPI.prototype.renderParameter = function (parameterData) {
-        var parameterContainer = this.domHelper.createParameterElement(parameterData.x, parameterData.y);
+        var parameterContainer = this.domHelper.createDivElement({
+            position: 'absolute',
+            border: '1px solid orange',
+            height: '50px',
+            width: '150px',
+            top: parameterData.y + 'px',
+            left: parameterData.x + 'px'
+        });
         parameterContainer.innerText = parameterData.name;
         parameterContainer.draggable = true;
         parameterContainer.ondragstart = this.onDragStart.bind(this);
         parameterContainer.ondragend = this.dropElement.bind(this, parameterData);
+        this.canvas.appendChild(parameterContainer);
+    };
+    MethodCanvasAPI.prototype.renderVariable = function (variableData) {
+        var parameterContainer = this.domHelper.createDivElement({
+            position: 'absolute',
+            border: '1px solid pink',
+            height: '50px',
+            width: '150px',
+            top: variableData.y + 'px',
+            left: variableData.x + 'px'
+        });
+        parameterContainer.innerText = variableData.name;
+        parameterContainer.draggable = true;
+        parameterContainer.ondragstart = this.onDragStart.bind(this);
+        parameterContainer.ondragend = this.dropElement.bind(this, variableData);
         this.canvas.appendChild(parameterContainer);
     };
     MethodCanvasAPI.prototype.dropElement = function (elementData, event) {
@@ -588,46 +637,6 @@ var DOMHelper = /** @class */ (function () {
         if (result === null)
             throw new Error('Element with id \'' + id + '\' not found.');
         return result;
-    };
-    DOMHelper.prototype.createClassElement = function (x, y) {
-        return this.createDivElement({
-            position: 'absolute',
-            border: '1px solid black',
-            height: '50px',
-            width: '150px',
-            top: y + 'px',
-            left: x + 'px'
-        });
-    };
-    DOMHelper.prototype.createPropertyElement = function (x, y) {
-        return this.createDivElement({
-            position: 'absolute',
-            border: '1px solid blue',
-            height: '50px',
-            width: '150px',
-            top: y + 'px',
-            left: x + 'px'
-        });
-    };
-    DOMHelper.prototype.createMethodElement = function (x, y) {
-        return this.createDivElement({
-            position: 'absolute',
-            border: '1px solid red',
-            height: '50px',
-            width: '150px',
-            top: y + 'px',
-            left: x + 'px'
-        });
-    };
-    DOMHelper.prototype.createParameterElement = function (x, y) {
-        return this.createDivElement({
-            position: 'absolute',
-            border: '1px solid orange',
-            height: '50px',
-            width: '150px',
-            top: y + 'px',
-            left: x + 'px'
-        });
     };
     DOMHelper.prototype.removeAllChildren = function (element) {
         while (element.lastChild)
@@ -750,6 +759,13 @@ var MethodData = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(MethodData.prototype, "variables", {
+        get: function () {
+            return this._variables;
+        },
+        enumerable: true,
+        configurable: true
+    });
     MethodData.prototype.addParameter = function (parameterName, x, y) {
         if (this._parameters === undefined) {
             this._parameters = [];
@@ -757,6 +773,14 @@ var MethodData = /** @class */ (function (_super) {
         var newProperty = new PropertyData(parameterName, x, y);
         this._parameters.push(newProperty);
         return newProperty;
+    };
+    MethodData.prototype.addVariable = function (variableName, x, y) {
+        if (this._variables === undefined) {
+            this._variables = [];
+        }
+        var newVariable = new PropertyData(variableName, x, y);
+        this._variables.push(newVariable);
+        return newVariable;
     };
     return MethodData;
 }(AbstractCanvasData));
