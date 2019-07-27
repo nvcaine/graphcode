@@ -59,6 +59,8 @@ class UIWrapper implements DOMWrapper {
         this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_METHOD_PARAMETER, this.addMethodParameter, messenger );
         this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_METHOD_VARIABLE, this.addMethodVariable, messenger );
 
+        this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_METHOD_ASSIGN, this.addMethodAssign, messenger );
+        this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_METHOD_RETURN, this.addMethodReturn, messenger );
     }
 
     /**
@@ -184,5 +186,13 @@ class UIWrapper implements DOMWrapper {
 
         if ( variableName )
             messenger.sendMessage( Messages.ADD_METHOD_VARIABLE, variableName );
+    }
+
+    private addMethodAssign( messenger: SimpleMessenger ) {
+        console.log('add assign');
+    }
+
+    private addMethodReturn( messenger: SimpleMessenger ) {
+        console.log('add return');
     }
 }

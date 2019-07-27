@@ -9,4 +9,7 @@ class InterfaceButtons {
     public static readonly INTERFACE_CLASS_BACK: string = 'interface-class-back';
     public static readonly INTERFACE_ADD_METHOD_PARAMETER: string = 'interface-add-method-parameter';
     public static readonly INTERFACE_ADD_METHOD_VARIABLE: string = 'interface-add-method-variable';
+    public static readonly INTERFACE_ADD_METHOD_ASSIGN: string = 'interface-add-method-assign';
+    public static readonly INTERFACE_ADD_METHOD_RETURN: string = 'interface-add-method-return';
+
 }
