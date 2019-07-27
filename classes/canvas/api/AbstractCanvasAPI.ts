@@ -1,7 +1,6 @@
 abstract class AbstractCanvasAPI {
 
     protected canvas: HTMLDivElement;
-    protected domHelper: DOMHelper;
 
     private canvasOffset: Vector2;
     private mouseOffset: Vector2;
@@ -15,7 +14,6 @@ abstract class AbstractCanvasAPI {
         let rect: ClientRect = canvas.getBoundingClientRect();
 
         this.canvasOffset = new Vector2( rect.left, rect.top )
-        this.domHelper = new DOMHelper();
 
         this.canvas = canvas;
         this.canvas.ondragover = function ( event: DragEvent ) {

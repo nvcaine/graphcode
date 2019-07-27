@@ -1,6 +1,6 @@
-class DOMHelper {
+abstract class DOMHelper {
 
-    public getElementById( id: string ): HTMLElement {
+    public static getElementById( id: string ): HTMLElement {
 
         let result: HTMLElement;
 
@@ -12,13 +12,13 @@ class DOMHelper {
         return result;
     }
 
-    public removeAllChildren( element: HTMLDivElement ) {
+    public static removeAllChildren( element: HTMLDivElement ) {
 
         while ( element.lastChild )
             element.removeChild( element.lastChild );
     }
 
-    public createDivElement( style: any ): HTMLDivElement {
+    public static createDivElement( style: any ): HTMLDivElement {
 
         let result: HTMLDivElement = document.createElement( 'div' ),
             keys: string[] = Object.keys( style );

@@ -13,7 +13,7 @@ class AppCanvasAPI extends AbstractCanvasAPI {
 
     private renderClass( classData: ClassData ) {
 
-        let classContainer: HTMLDivElement = this.domHelper.createDivElement( {
+        let classContainer: HTMLDivElement = DOMHelper.createDivElement( {
             position: 'absolute',
             border: '1px solid black',
             height: '50px',

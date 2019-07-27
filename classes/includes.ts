@@ -17,9 +17,14 @@
 /// <reference path="./canvas/data/ClassData.ts" />
 /// <reference path='./canvas/data/Vector2.ts' />
 
-/// <reference path='./canvas/helpers/DOMHelper.ts' />
+/// <reference path='./helpers/DOMHelper.ts' />
 
 /// <reference path="./messaging/MessagingManager.ts" />
 /// <reference path="./messaging/consts/Messages.ts" />
 
 /// <reference path="./dom/consts/InterfaceButtons.ts" />
+
+/// <reference path="./ui/AbstractInterface.ts" />
+/// <reference path="./ui/AppInterface.ts" />
+/// <reference path="./ui/ClassInterface.ts" />
+/// <reference path="./ui/MethodInterface.ts" />

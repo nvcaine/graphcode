@@ -7,7 +7,7 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
 
     public closeMethod() {
 
-        this.domHelper.removeAllChildren( this.canvas );
+        DOMHelper.removeAllChildren( this.canvas );
     }
 
     public addParameter( parameterData: PropertyData ) {
@@ -31,7 +31,8 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
 
     private renderParameter( parameterData: PropertyData ) {
 
-        let parameterContainer: HTMLDivElement = this.domHelper.createDivElement( {
+        // !! remove DOMHelper reference everywhere
+        let parameterContainer: HTMLDivElement = DOMHelper.createDivElement( {
             position: 'absolute',
             border: '1px solid orange',
             height: '50px',
@@ -50,7 +51,7 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
 
     private renderVariable( variableData: PropertyData ) {
 
-        let parameterContainer: HTMLDivElement = this.domHelper.createDivElement( {
+        let parameterContainer: HTMLDivElement = DOMHelper.createDivElement( {
             position: 'absolute',
             border: '1px solid pink',
             height: '50px',

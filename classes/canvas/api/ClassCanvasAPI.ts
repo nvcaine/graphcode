@@ -10,7 +10,7 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
      */
     public closeClass() {
 
-        this.domHelper.removeAllChildren( this.canvas );
+        DOMHelper.removeAllChildren( this.canvas );
     }
 
     /**
@@ -44,7 +44,7 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
 
     private renderProperty( propertyData: PropertyData ) {
 
-        let propertyContainer: HTMLDivElement = this.domHelper.createDivElement( {
+        let propertyContainer: HTMLDivElement = DOMHelper.createDivElement( {
             position: 'absolute',
             border: '1px solid blue',
             height: '50px',
@@ -63,7 +63,7 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
 
     private renderMethod( methodData: MethodData ) {
 
-        let methodContainer: HTMLDivElement = this.domHelper.createDivElement( {
+        let methodContainer: HTMLDivElement = DOMHelper.createDivElement( {
             position: 'absolute',
             border: '1px solid red',
             height: '50px',
