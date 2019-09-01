@@ -33,7 +33,7 @@ abstract class DOMHelper {
     public static createIdentifierConnector( startX: number, startY: number, endX: number, endY: number ): SVGElement {
 
         let result: SVGElement = document.createElementNS( 'http://www.w3.org/2000/svg', 'svg' ),
-            line: HTMLElement = document.createElement( 'line' );
+            line: SVGLineElement = document.createElementNS( 'http://www.w3.org/2000/svg', 'line' );
 
         line.setAttribute( 'x1', '0' );
         line.setAttribute( 'y1', '0' );
