@@ -29,4 +29,27 @@ abstract class DOMHelper {
 
         return result;
     }
+
+    public static createIdentifierConnector( startX: number, startY: number, endX: number, endY: number ): SVGElement {
+
+        let result: SVGElement = document.createElementNS( 'http://www.w3.org/2000/svg', 'svg' ),
+            line: HTMLElement = document.createElement( 'line' );
+
+        line.setAttribute( 'x1', '0' );
+        line.setAttribute( 'y1', '0' );
+        line.setAttribute( 'x2', Math.abs( endX - startX ) + '' );
+        line.setAttribute( 'y2', Math.abs( endY - startY ) + '' );
+        line.setAttribute( 'stroke', 'red' );
+        line.setAttribute( 'stroke-width', '2' );
+
+        result.setAttribute( 'height', Math.abs( startY - endY ) + 5 + '' );
+        result.setAttribute( 'width', Math.abs( startX - endX ) + 5 + '' );
+        result.style['position'] = 'absolute';
+        result.style['top'] = Math.min( startY, endY ) + 'px';
+        result.style['left'] = Math.min( startX, endX ) + 'px';
+
+        result.appendChild( line );
+
+        return result;
+    }
 }
