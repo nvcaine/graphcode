@@ -31,7 +31,6 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
 
     private renderParameter( parameterData: PropertyData ) {
 
-        // !! remove DOMHelper reference everywhere
         let parameterContainer: HTMLDivElement = DOMHelper.createDivElement( {
             position: 'absolute',
             border: '1px solid orange',
@@ -44,7 +43,7 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
         parameterContainer.innerText = parameterData.name;
         parameterContainer.draggable = true;
         parameterContainer.ondragstart = this.onDragStart.bind( this );
-        parameterContainer.ondragend = this.dropElement.bind( this, parameterData );
+        parameterContainer.ondragend = this.dropParameter.bind( this, parameterData );
 
         parameterContainer.ondblclick = this.addIdentifier.bind( this, parameterData );
 
@@ -88,27 +87,52 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
                 width: '100px',
                 top: identifierData.y + 'px',
                 left: identifierData.x + 'px'
-            } );
+            } ),
+            connectorContainer: SVGElement = this.createIdentifierParentConnector( identifierData );
 
         identifierContainer.innerText = identifierData.name;
         identifierContainer.draggable = true;
         identifierContainer.ondragstart = this.onDragStart.bind( this );
-        identifierContainer.ondragend = this.dropIdentifier.bind( this, identifierData );
+        identifierContainer.ondragend = this.dropIdentifier.bind( this, identifierData, connectorContainer );
+
+        identifierData.connectorElement = connectorContainer;
+        parameterData.identifiers.push( identifierData );
 
         this.canvas.appendChild( identifierContainer );
-
-        this.addIdentifierParentConnector( identifierData, parameterData );
+        this.canvas.appendChild( connectorContainer );
     }
 
-    private dropIdentifier( identifierData: IdentifierData, event: DragEvent ) {
+    private dropIdentifier( identifierData: IdentifierData, connectorElement: SVGElement, event: DragEvent ) {
 
         this.dropElement( identifierData, event );
+
+        this.updateConnector( connectorElement, identifierData );
     }
 
-    private addIdentifierParentConnector( identifierData: IdentifierData, parameterData: PropertyData ) {
+    private createIdentifierParentConnector( identifierData: IdentifierData ): SVGElement {
 
-        let connectorContainer: SVGElement = DOMHelper.createIdentifierConnector( parameterData.x + 150, parameterData.y + 10, identifierData.x, identifierData.y + 15 );
+        // !! correctly calculate connector bounds based on parameter-identifier relative position
+        let connectorContainer: SVGElement = DOMHelper.createIdentifierConnector( identifierData.parent.x + 150, identifierData.parent.y + 10, identifierData.x, identifierData.y + 15 );
 
-        this.canvas.appendChild( connectorContainer );
+        return connectorContainer;
+    }
+
+    private updateConnector( connectorElement: SVGElement, identifierData: IdentifierData ) {
+
+        let line: SVGLineElement = DOMHelper.createLineElement( identifierData.parent.x + 150, identifierData.parent.y + 10, identifierData.x, identifierData.y + 15 );
+
+        connectorElement.removeChild( connectorElement.firstChild );
+        DOMHelper.updateConnectorContainer( connectorElement, identifierData.parent.x + 150, identifierData.parent.y + 10, identifierData.x, identifierData.y + 15 );
+        connectorElement.appendChild( line );
+    }
+
+    private dropParameter( parameterData: PropertyData, event: DragEvent ) {
+
+        this.dropElement( parameterData, event );
+
+        parameterData.identifiers.map( ( identifierData: IdentifierData ) => {
+
+            this.updateConnector( identifierData.connectorElement, identifierData );
+        } );
     }
 }

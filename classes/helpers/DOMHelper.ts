@@ -33,14 +33,7 @@ abstract class DOMHelper {
     public static createIdentifierConnector( startX: number, startY: number, endX: number, endY: number ): SVGElement {
 
         let result: SVGElement = document.createElementNS( 'http://www.w3.org/2000/svg', 'svg' ),
-            line: SVGLineElement = document.createElementNS( 'http://www.w3.org/2000/svg', 'line' );
-
-        line.setAttribute( 'x1', '0' );
-        line.setAttribute( 'y1', '0' );
-        line.setAttribute( 'x2', Math.abs( endX - startX ) + '' );
-        line.setAttribute( 'y2', Math.abs( endY - startY ) + '' );
-        line.setAttribute( 'stroke', 'red' );
-        line.setAttribute( 'stroke-width', '2' );
+            line: SVGLineElement = this.createLineElement( startX, startY, endX, endY );
 
         result.setAttribute( 'height', Math.abs( startY - endY ) + 5 + '' );
         result.setAttribute( 'width', Math.abs( startX - endX ) + 5 + '' );
@@ -51,5 +44,26 @@ abstract class DOMHelper {
         result.appendChild( line );
 
         return result;
+    }
+
+    public static createLineElement( startX: number, startY: number, endX: number, endY: number ): SVGLineElement {
+
+        let line: SVGLineElement = document.createElementNS( 'http://www.w3.org/2000/svg', 'line' );
+
+        line.setAttribute( 'x1', '0' );
+        line.setAttribute( 'y1', '0' );
+        line.setAttribute( 'x2', Math.abs( endX - startX ) + '' );
+        line.setAttribute( 'y2', Math.abs( endY - startY ) + '' );
+        line.setAttribute( 'stroke', 'red' );
+        line.setAttribute( 'stroke-width', '2' );
+
+        return line;
+    }
+
+    public static updateConnectorContainer( connector: SVGElement, startX: number, startY: number, endX: number, endY: number ) {
+        connector.setAttribute( 'height', Math.abs( startY - endY ) + 5 + '' );
+        connector.setAttribute( 'width', Math.abs( startX - endX ) + 5 + '' );
+        connector.style['top'] = Math.min( startY, endY ) + 'px';
+        connector.style['left'] = Math.min( startX, endX ) + 'px';
     }
 }

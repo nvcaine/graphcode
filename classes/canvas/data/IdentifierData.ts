@@ -1,5 +1,7 @@
 class IdentifierData extends AbstractCanvasData {
 
+    public connectorElement: SVGElement;
+
     private _parent: PropertyData;
 
     public constructor( parent: PropertyData ) {
