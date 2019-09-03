@@ -81,14 +81,6 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
         this.canvas.appendChild( methodContainer );
     }
 
-    private dropElement( elementData: AbstractCanvasData, event: DragEvent ) {
-
-        let position: Vector2 = this.onDragEnd( event );
-
-        elementData.x = position.x;
-        elementData.y = position.y;
-    }
-
     private openMethod( methodData: MethodData ) {
 
         let messagingManager: MessagingManager = MessagingManager.getInstance();

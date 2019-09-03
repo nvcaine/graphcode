@@ -25,23 +25,10 @@ class AppCanvasAPI extends AbstractCanvasAPI {
         classContainer.innerText = classData.name;
         classContainer.draggable = true;
         classContainer.ondragstart = this.onDragStart.bind( this );
-        classContainer.ondragend = this.dropClass.bind( this, classData );
+        classContainer.ondragend = this.dropElement.bind( this, classData );
         classContainer.ondblclick = this.openClass.bind( this, classData );
 
         this.canvas.appendChild( classContainer );
-    }
-
-    /**
-     * Update target coordinate on canvas and update the object data
-     * @param classData the object passed to the handler when creating a new class object
-     * @param event
-     */
-    private dropClass( classData: ClassData, event: DragEvent ) {
-
-        let position: Vector2 = super.onDragEnd( event );
-
-        classData.x = position.x;
-        classData.y = position.y;
     }
 
     /**

@@ -83,14 +83,6 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
         variableData.identifiers.map( this.renderIdentifier, this );
     }
 
-    private dropElement( elementData: AbstractCanvasData, event: DragEvent ) {
-
-        let position: Vector2 = this.onDragEnd( event );
-
-        elementData.x = position.x;
-        elementData.y = position.y;
-    }
-
     /**
      * Create an identifier and connector for the specified property and render it.
      * Add the identifier object to the property data.
@@ -98,9 +90,10 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
      */
     private addIdentifier( propertyData: PropertyData ) {
 
-        let identifierData: IdentifierData = new IdentifierData( propertyData );
+        let identifierData: IdentifierData = new IdentifierData( propertyData ),
+            coords: any = this.getConnectorBounds( identifierData );
 
-        identifierData.connectorElement = this.createIdentifierParentConnector( identifierData );
+        identifierData.connectorElement = DOMHelper.createConnectorElement( coords );
         propertyData.identifiers.push( identifierData );
 
         this.renderIdentifier( identifierData );
@@ -130,6 +123,11 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
         this.canvas.appendChild( identifierData.connectorElement );
     }
 
+    /**
+     * When dorpping the identifier, updated the connector in addition to updating its position.
+     * @param identifierData
+     * @param event 
+     */
     private dropIdentifier( identifierData: IdentifierData, event: DragEvent ) {
 
         this.dropElement( identifierData, event );
@@ -137,27 +135,37 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
         this.updateIdentifierConnector( identifierData );
     }
 
-    private createIdentifierParentConnector( identifierData: IdentifierData ): SVGElement {
-
-        // !! correctly calculate connector bounds based on parameter-identifier relative position
-
-        return DOMHelper.createConnectorElement( identifierData.parent.x + 150, identifierData.parent.y + 10, identifierData.x, identifierData.y + 15 );
-    }
-
+    /**
+     * Get identifier bounds and update the connector container and line
+     * @param identifierData 
+     */
     private updateIdentifierConnector( identifierData: IdentifierData ) {
 
-        let line: SVGLineElement = DOMHelper.createLineElement( identifierData.parent.x + 150, identifierData.parent.y + 10, identifierData.x, identifierData.y + 15 ),
-            connectorElement: SVGElement = identifierData.connectorElement;
+        let coords: any = this.getConnectorBounds( identifierData );
 
-        connectorElement.removeChild( connectorElement.firstChild );
-        DOMHelper.updateConnectorContainer( connectorElement, identifierData.parent.x + 150, identifierData.parent.y + 10, identifierData.x, identifierData.y + 15 );
-        connectorElement.appendChild( line );
+        DOMHelper.updateConnectorContainer( identifierData.connectorElement, coords );
+        DOMHelper.updateConnectorLine( <SVGLineElement> identifierData.connectorElement.firstChild, coords );
     }
 
-    private dropProperty( parameterData: PropertyData, event: DragEvent ) {
+    /**
+     * Update connectors when dropping an parameter or variable
+     * @param propertyData
+     * @param event 
+     */
+    private dropProperty( propertyData: PropertyData, event: DragEvent ) {
 
-        this.dropElement( parameterData, event );
+        this.dropElement( propertyData, event );
 
-        parameterData.identifiers.map( this.updateIdentifierConnector, this );
+        propertyData.identifiers.map( this.updateIdentifierConnector, this );
+    }
+
+    private getConnectorBounds( identifierData: IdentifierData ) {
+
+        return {
+            startX: identifierData.parent.x + 150,
+            startY: identifierData.parent.y + 10,
+            endX: identifierData.x,
+            endY: identifierData.y + 15
+        };
     }
 }

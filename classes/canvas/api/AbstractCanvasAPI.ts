@@ -55,6 +55,19 @@ abstract class AbstractCanvasAPI {
     }
 
     /**
+     * Update canvas data object position when element is dropped.
+     * @param elementData 
+     * @param event 
+     */
+    protected dropElement( elementData: AbstractCanvasData, event: DragEvent ) {
+
+        let position: Vector2 = this.onDragEnd( event );
+
+        elementData.x = position.x;
+        elementData.y = position.y;
+    }
+
+    /**
      * Get the global position of a dropped element
      * @param event the drag event to process
      * @param canvasOffset the current canvas offset relative to the page
