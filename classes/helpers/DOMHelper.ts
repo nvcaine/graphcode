@@ -30,7 +30,7 @@ abstract class DOMHelper {
         return result;
     }
 
-    public static createIdentifierConnector( startX: number, startY: number, endX: number, endY: number ): SVGElement {
+    public static createConnectorElement( startX: number, startY: number, endX: number, endY: number ): SVGElement {
 
         let result: SVGElement = document.createElementNS( 'http://www.w3.org/2000/svg', 'svg' ),
             line: SVGLineElement = this.createLineElement( startX, startY, endX, endY );
