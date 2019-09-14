@@ -1,21 +1,14 @@
-/// <reference path="./consts/DOMContainers.ts" />
-/// <reference path="./consts/InterfaceButtons.ts" />
+class UIWrapper implements DOMWrapper {
 
-/// <reference path="../canvas/data/ClassData.ts" />
-
-/// <reference path="../messaging/consts/Messages.ts" />
-
-class UIWrapper extends AbstractWrapper implements DOMWrapper {
-
-    private appInterface: HTMLDivElement;
-    private classInterface: HTMLDivElement;
+    private appInterface: AppInterface;
+    private classInterface: ClassInterface;
+    private methodInterface: MethodInterface;
 
     public init( messenger: SimpleMessenger ) {
 
-        messenger.onMessage( Messages.OPEN_CLASS, this.openClass.bind( this ) );
-
         try {
             this.initInterfaces( messenger );
+            this.initMessages( messenger );
         } catch ( error ) {
             console.error( error.message );
         }
@@ -23,113 +16,47 @@ class UIWrapper extends AbstractWrapper implements DOMWrapper {
 
     private initInterfaces( messenger: SimpleMessenger ) {
 
-        this.initAppInterface( messenger );
-        this.initClassInterface( messenger );
+        this.appInterface = new AppInterface( messenger );
+        this.classInterface = new ClassInterface( messenger );
+        this.methodInterface = new MethodInterface( messenger );
+
+        this.classInterface.hide();
+        this.methodInterface.hide();
 
         console.log( '## Interface initalized' );
     }
 
-    private initAppInterface( messenger: SimpleMessenger ) {
+    private initMessages( messenger: SimpleMessenger ) {
 
-        this.appInterface = <HTMLDivElement> this.getElementById( DOMContainers.APP_INTERFACE );
-
-        this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_CLASS, this.addClassClickHandler, messenger );
-        this.initInterfaceButton( InterfaceButtons.INTERFACE_BACK, this.backClickHandler, messenger );
+        messenger.onMessage( Messages.OPEN_CLASS, this.openClass.bind( this ) );
+        messenger.onMessage( Messages.OPEN_METHOD, this.openMethod.bind( this ) );
+        messenger.onMessage( Messages.CLOSE_CLASS, this.closeClass.bind( this ) );
+        messenger.onMessage( Messages.CLOSE_METHOD, this.closeMethod.bind( this ) );
     }
 
-    private initClassInterface( messenger: SimpleMessenger ) {
-
-        this.classInterface = <HTMLDivElement> this.getElementById( DOMContainers.CLASS_INTERFACE );
-        this.classInterface.hidden = true;
-
-        this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_CLASS_PROPERTY, this.addPropertyClickHandler, messenger );
-        this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_CLASS_METHOD, this.addMethodClickHandler, messenger );
-    }
-
-    /**
-     * Get an element by its id and attach a click handler
-     * @param buttonId the id of the DOM element corresponding to the button
-     * @param handler the click handler
-     * @returns a refference to the button
-     * @throws 
-     */
-    private initInterfaceButton( buttonId: string, handler: ( m: SimpleMessenger ) => void, m: SimpleMessenger ): HTMLButtonElement {
-
-        let buttonElement: HTMLButtonElement = <HTMLButtonElement> this.getElementById( buttonId );
-
-        buttonElement.onclick = handler.bind( this, m );
-
-        return buttonElement;
-    }
-
-    /**
-     * Allow user to cancel a prompt and optionally warn if empty value entered
-     * @param message The prompt message
-     * @param defaultValue
-     * @param warnIfEmpty if the user enters an empty value, display a warning if set to true
-     */
-    private validatedPrompt( message: string, defaultValue: string, warnIfEmpty: boolean = true ): string {
-
-        let result: string = prompt( message, defaultValue );
-
-        if ( result === null ) {
-            return null; // user cancelled
-        }
-
-        result = result.replace( /\s+/g, '' );
-
-        if ( result.length === 0 && warnIfEmpty ) {
-            console.warn( 'Cannot add a class without a name.' );
-            return null;
-        }
-
-        return result;
-    }
-
-    private addClassClickHandler( messenger: SimpleMessenger ) {
-
-        let newClassName: string = this.validatedPrompt( 'Enter class name', 'NewClass' );
-
-        if ( newClassName )
-            messenger.sendMessage( Messages.ADD_CLASS, newClassName );
-    }
-
-    // !! remove class data reference
     private openClass( messageData: ClassData ) {
 
-        this.appInterface.hidden = true;
-        this.classInterface.hidden = false;
-        this.renderClass( messageData );
+        this.appInterface.hide();
+        this.classInterface.show();
+        this.classInterface.renderClass( messageData );
     }
 
-    // !! handle in a different manner
-    private renderClass( classData: ClassData ) {
+    private closeClass( messenger: SimpleMessenger ) {
 
-        let nameSpan: HTMLSpanElement = <HTMLSpanElement> document.getElementById( 'interface-class-name' );
-
-        nameSpan.innerHTML = classData.name;
+        this.classInterface.hide();
+        this.appInterface.show();
     }
 
-    private backClickHandler( messenger: SimpleMessenger ) {
+    private openMethod( methodData: MethodData ) {
 
-        messenger.sendMessage( Messages.CLOSE_CLASS, undefined );
-        this.appInterface.hidden = false;
-        this.classInterface.hidden = true;
+        this.classInterface.hide();
+        this.methodInterface.show();
+        this.methodInterface.renderMethod( methodData );
     }
 
-    private addPropertyClickHandler( messenger: SimpleMessenger ) {
+    private closeMethod( messenger: SimpleMessenger ) {
 
-        let propertyName: string = this.validatedPrompt( 'Enter property name', 'newProperty' );
-
-        if ( propertyName )
-            messenger.sendMessage( Messages.ADD_CLASS_PROPERTY, propertyName );
-    }
-
-    private addMethodClickHandler( messenger: SimpleMessenger ) {
-
-        let methodName: string = this.validatedPrompt( 'Enter method name', 'newMethod' );
-
-        if ( methodName )
-            messenger.sendMessage( Messages.ADD_CLASS_METHOD, methodName );
+        this.methodInterface.hide();
+        this.classInterface.show();
     }
 }

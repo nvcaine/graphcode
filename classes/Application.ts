@@ -1,5 +1,4 @@
-/// <reference path="./dom/CanvasWrapper.ts" />
-/// <reference path="./dom/UIwrapper.ts" />
+/// <reference path="includes.ts" />
 
 class Application {
 
@@ -9,8 +8,8 @@ class Application {
 
         this.initWrappers(
             [
-                new CanvasWrapper,
-                new UIWrapper
+                new UIWrapper,
+                new CanvasWrapper
             ],
             MessagingManager.getInstance()
         );
