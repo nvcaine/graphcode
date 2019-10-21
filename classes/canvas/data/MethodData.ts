@@ -28,7 +28,8 @@ class MethodData extends AbstractCanvasData {
             this._parameters = [];
         }
 
-        let newProperty: PropertyData = new PropertyData( parameterName, x, y );
+        // ! no access level
+        let newProperty: PropertyData = new PropertyData( parameterName, '', '', AccessLevel.PUBLIC, false, x, y );
 
         this._parameters.push( newProperty );
 
@@ -41,7 +42,8 @@ class MethodData extends AbstractCanvasData {
             this._variables = [];
         }
 
-        let newVariable: PropertyData = new PropertyData( variableName, x, y );
+        // ! no access level
+        let newVariable: PropertyData = new PropertyData( variableName, '', '', AccessLevel.PUBLIC, false, x, y );
 
         this._variables.push( newVariable );
 

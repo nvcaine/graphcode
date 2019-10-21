@@ -13,7 +13,7 @@
             <div id="class-interface">
                 <button id="interface-back">Back</button>
                 <span id="interface-class-name"></span>
-                <button id="interface-class-add-property">Add property</button>
+                <button id="interface-class-add-property" data-toggle="modal" data-target="#new-property-modal">Add property</button>
                 <button id="interface-class-add-method">Add method</button>
             </div>
 
@@ -48,9 +48,9 @@
                             <div class="input-group">
                                 <input type="text" id="new-class-name" class="form-control" placeholder="NewClass" />
                             </div>
-                            <div>
-                                <input id="new-class-abstract" type="checkbox" />
-                                <label for="new-class-abstract">Abstract</label>
+                            <div class="form-group form-check">
+                                <input id="new-class-abstract" type="checkbox" class="form-check-input" />
+                                <label for="new-class-abstract" class="form-check-label">Abstract</label>
                             </div>
                         </div>
 
@@ -61,6 +61,55 @@
                     </div> <!-- .modal-content -->
                 </div> <!-- .modal-dialog -->
             </div> <!-- #new-class-dialog -->
+
+
+            <div id="new-property-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="property-modal-label" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div id="property-modal-label" class="modal-title">Add new property</div>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="input-group">
+                                <input type="text" id="new-property-name" class="form-control" placeholder="newProperty" />
+                            </div>
+                            <div class="input-group">
+                                <input type="text" id="new-property-type" class="form-control" placeholder="Property type" />
+                            </div>
+                            <div class="input-group">
+                                <input type="text" id="new-property-value" class="form-control" placeholder="Default value" />
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="radio" id="new-property-public" class="form-check-input" value="public" />
+                                <label class="form-check-label" for="">Public</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="radio" id="new-property-protected" class="form-check-input" value="protected" />
+                                <label class="form-check-label" for="">Protected</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="radio" id="new-property-private" class="form-check-input" value="private" />
+                                <label class="form-check-label" for="">Private</label>
+                            </div>
+    
+                            <div class="form-group form-check">
+                                <input id="new-property-static" type="checkbox" class="form-check-input" />
+                                <label for="new-property-static" class="form-check-label">Static</label>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" id="submit-new-property" class="btn btn-primary">Add property</button>
+                        </div>
+                    </div> <!-- .modal-content -->
+                </div> <!-- .modal-dialog -->
+            </div> <!-- #new-class-dialog -->
+    
         </div> <!-- #modals-container -->
     </body>
 

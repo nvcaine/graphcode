@@ -53,13 +53,20 @@ class ClassData extends AbstractCanvasData {
         this._isAbstract = classData._isAbstract;
     }
 
-    public addProperty( propertyName: string, x: number, y: number ): PropertyData {
+    public addProperty( propertyName: string, propertyType: string, defaultValue: string, accessLevel: AccessLevel, isStatic: boolean, x: number, y: number ): PropertyData {
 
         if ( this._properties === undefined ) {
             this._properties = [];
         }
 
-        let newProperty: PropertyData = new PropertyData( propertyName, x, y );
+        let newProperty: PropertyData = new PropertyData(
+            propertyName,
+            propertyType,
+            defaultValue,
+            accessLevel,
+            isStatic,
+            x, y
+        );
 
         this._properties.push( newProperty );
 
