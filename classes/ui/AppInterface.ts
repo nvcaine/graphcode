@@ -11,9 +11,8 @@ class AppInterface extends AbstractInterface {
 
     private addClassClickHandler( messenger: SimpleMessenger ) {
 
-        // let newClassName: string = this.validatedPrompt( 'Enter class name', 'NewClass' );
-        let newClassName: string = (<HTMLInputElement> DOMHelper.getElementById('new-class-name')).value;
-        let isAbstractClass: boolean = (<HTMLInputElement> DOMHelper.getElementById('new-class-abstract')).checked;
+        let newClassName: string = ( <HTMLInputElement> DOMHelper.getElementById( 'new-class-name' ) ).value,
+            isAbstractClass: boolean = ( <HTMLInputElement> DOMHelper.getElementById( 'new-class-abstract' ) ).checked;
 
         if ( newClassName )
             messenger.sendMessage( Messages.ADD_CLASS, newClassName, isAbstractClass );

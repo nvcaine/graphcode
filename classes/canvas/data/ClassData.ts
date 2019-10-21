@@ -4,14 +4,14 @@ class ClassData extends AbstractCanvasData {
     private _properties: PropertyData[];
     private _methods: MethodData[];
 
-    private isAbstract:boolean;
+    private _isAbstract: boolean;
 
-    public constructor( name: string, isAbstract:boolean, x: number, y: number ) {
+    public constructor( name: string, isAbstract: boolean, x: number, y: number ) {
 
         super( name, x, y );
 
         this._id = +new Date;
-        this.isAbstract = isAbstract;
+        this._isAbstract = isAbstract;
     }
 
     public get id(): number {
@@ -27,6 +27,10 @@ class ClassData extends AbstractCanvasData {
     public get methods(): MethodData[] {
 
         return this._methods;
+    }
+
+    public get isAbstract(): boolean {
+        return this._isAbstract;
     }
 
     public copy(): ClassData {
@@ -46,7 +50,7 @@ class ClassData extends AbstractCanvasData {
         this._properties = classData._properties;
         this._methods = classData._methods;
 
-        this.isAbstract = classData.isAbstract;
+        this._isAbstract = classData._isAbstract;
     }
 
     public addProperty( propertyName: string, x: number, y: number ): PropertyData {
