@@ -16,20 +16,20 @@ class MessagingManager implements SimpleMessenger {
         return this.instance;
     }
 
-    public sendMessage( type: string, data: any ) {
+    public sendMessage( type: string, ...data: any[] ) {
 
         for ( let messageType in this.registeredHandlers ) {
             if ( type == messageType ) {
                 <Array<( data: any ) => any>>( this.registeredHandlers[type] ).map(
-                    function ( currentHandler: ( data: any ) => any ) {
-                        currentHandler.call( null, data );
+                    function ( currentHandler: ( ...data: any[] ) => any ) {
+                        currentHandler.apply( null, data );
                     }
                 );
             }
         }
     }
 
-    public onMessage( type: string, handler: ( data: any ) => any ) {
+    public onMessage( type: string, handler: ( ...data: any[] ) => any ) {
 
         if ( this.registeredHandlers.hasOwnProperty( type ) ) {
             let currentValue: Array<any> = this.registeredHandlers[type];

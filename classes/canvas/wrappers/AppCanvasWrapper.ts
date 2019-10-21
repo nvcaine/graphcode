@@ -17,10 +17,10 @@ class AppCanvasWrapper extends AbstractCanvasWrapper<AppCanvasAPI> {
         messenger.onMessage( Messages.ADD_CLASS, this.addClass.bind( this ) );
     }
 
-    private addClass( className: any ) {
+    private addClass( className: string, isAbstract: boolean ) {
 
         let classDataProxy: ClassDataProxy = ClassDataProxy.getInstance(),
-            classData: ClassData = classDataProxy.addClass( className, 100, 100 );
+            classData: ClassData = classDataProxy.addClass( className, isAbstract, 100, 100 );
 
         this.api.addClass( classData );
     }
