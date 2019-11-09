@@ -14,7 +14,7 @@
                 <button id="interface-back">Back</button>
                 <span id="interface-class-name"></span>
                 <button id="interface-class-add-property" data-toggle="modal" data-target="#new-property-modal">Add property</button>
-                <button id="interface-class-add-method">Add method</button>
+                <button id="interface-class-add-method" data-toggle="modal" data-target="#new-method-modal">Add method</button>
             </div>
 
             <div id="method-interface">
@@ -85,15 +85,15 @@
                             </div>
                             <div class="form-check form-check-inline">
                                 <input type="radio" id="new-property-public" class="form-check-input" value="public" />
-                                <label class="form-check-label" for="">Public</label>
+                                <label class="form-check-label" for="new-property-public">Public</label>
                             </div>
                             <div class="form-check form-check-inline">
                                 <input type="radio" id="new-property-protected" class="form-check-input" value="protected" />
-                                <label class="form-check-label" for="">Protected</label>
+                                <label class="form-check-label" for="new-property-protected">Protected</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input type="radio" id="new-property-private" class="form-check-input" value="private" />
-                                <label class="form-check-label" for="">Private</label>
+                                <input type="radio" id="new-property-private" class="form-check-input" value="private" checked />
+                                <label class="form-check-label" for="new-property-private">Private</label>
                             </div>
     
                             <div class="form-group form-check">
@@ -108,8 +108,52 @@
                         </div>
                     </div> <!-- .modal-content -->
                 </div> <!-- .modal-dialog -->
-            </div> <!-- #new-class-dialog -->
+            </div> <!-- #new-property-dialog -->
+
+            <div id="new-method-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="method-modal-label" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div id="method-modal-label" class="modal-title">Add new method</div>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="input-group">
+                                <input type="text" id="new-method-name" class="form-control" placeholder="newProperty" />
+                            </div>
+                            <div class="input-group">
+                                <input type="text" id="new-method-type" class="form-control" placeholder="Property type" />
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="radio" id="new-method-public" class="form-check-input" value="public" />
+                                <label class="form-check-label" for="new-method-public">Public</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="radio" id="new-method-protected" class="form-check-input" value="protected" />
+                                <label class="form-check-label" for="new-method-protected">Protected</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="radio" id="new-method-private" class="form-check-input" value="private" checked />
+                                <label class="form-check-label" for="new-method-private">Private</label>
+                            </div>
     
+                            <div class="form-group form-check">
+                                <input id="new-method-static" type="checkbox" class="form-check-input" />
+                                <label for="new-method-static" class="form-check-label">Static</label>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" id="submit-new-method" class="btn btn-primary">Add method</button>
+                        </div>
+                    </div> <!-- .modal-content -->
+                </div> <!-- .modal-dialog -->
+            </div> <!-- #new-property-dialog -->
+
         </div> <!-- #modals-container -->
     </body>
 

@@ -73,13 +73,19 @@ class ClassData extends AbstractCanvasData {
         return newProperty;
     }
 
-    public addMethod( methodName: string, x: number, y: number ): MethodData {
+    public addMethod( methodName: string, methodType: string, accessLevel: AccessLevel, isStatic: boolean, x: number, y: number ): MethodData {
 
         if ( this._methods === undefined ) {
             this._methods = [];
         }
 
-        let newMethod: MethodData = new MethodData( methodName, x, y );
+        let newMethod: MethodData = new MethodData(
+            methodName,
+            methodType,
+            accessLevel,
+            isStatic,
+            x, y
+        );
 
         this._methods.push( newMethod );
 

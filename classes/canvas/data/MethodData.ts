@@ -1,15 +1,19 @@
 class MethodData extends AbstractCanvasData {
 
-    public isPrivate: boolean;
+    private type: string;
+    private accessLevel: AccessLevel;
+    private isStatic: boolean;
 
     private _parameters: PropertyData[];
     private _variables: PropertyData[]
 
-    public constructor( name: string, x: number, y: number, isPrivate: boolean = false ) {
+    public constructor( name: string, type:string, accessLevel: AccessLevel, isStatic:boolean, x: number, y: number ) {
 
         super( name, x, y );
 
-        this.isPrivate = isPrivate;
+        this.type = type;
+        this.accessLevel = accessLevel;
+        this.isStatic = isStatic;
     }
 
     public get parameters(): PropertyData[] {

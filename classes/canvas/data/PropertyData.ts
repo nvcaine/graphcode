@@ -2,14 +2,14 @@ class PropertyData extends AbstractCanvasData {
 
     public identifiers: IdentifierData[];
 
+    private type: string;
     private accessLevel: AccessLevel;
     private defaultValue: string;
-    private propertyType: string;
     private isStatic: boolean
 
     public constructor(
         name: string,
-        propertyType: string,
+        type: string,
         defaultValue: string,
         accessLevel: AccessLevel,
         isStatic: boolean,
@@ -19,7 +19,7 @@ class PropertyData extends AbstractCanvasData {
 
         super( name, x, y );
 
-        this.propertyType = propertyType;
+        this.type = type;
         this.defaultValue = defaultValue;
         this.accessLevel = accessLevel;
         this.isStatic = isStatic;
