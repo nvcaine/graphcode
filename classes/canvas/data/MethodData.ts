@@ -1,7 +1,6 @@
-class MethodData extends AbstractCanvasData {
+class MethodData extends AbstractClassData {
 
     private type: string;
-    private accessLevel: AccessLevel;
     private isStatic: boolean;
 
     private _parameters: PropertyData[];
@@ -9,10 +8,9 @@ class MethodData extends AbstractCanvasData {
 
     public constructor( name: string, type:string, accessLevel: AccessLevel, isStatic:boolean, x: number, y: number ) {
 
-        super( name, x, y );
+        super( name, accessLevel, x, y );
 
         this.type = type;
-        this.accessLevel = accessLevel;
         this.isStatic = isStatic;
     }
 
