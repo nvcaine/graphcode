@@ -1,18 +1,7 @@
 class MethodData extends AbstractClassData {
 
-    private type: string;
-    private isStatic: boolean;
-
     private _parameters: PropertyData[];
     private _variables: PropertyData[]
-
-    public constructor( name: string, type:string, accessLevel: AccessLevel, isStatic:boolean, x: number, y: number ) {
-
-        super( name, accessLevel, x, y );
-
-        this.type = type;
-        this.isStatic = isStatic;
-    }
 
     public get parameters(): PropertyData[] {
 
