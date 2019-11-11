@@ -1,9 +1,5 @@
 class PropertyData extends AbstractClassData {
 
-    public identifiers: IdentifierData[];
-
-    private defaultValue: string;
-
     public constructor(
         name: string,
         type: string,
@@ -14,10 +10,6 @@ class PropertyData extends AbstractClassData {
         y: number
     ) {
 
-        super( name, type, accessLevel, isStatic, x, y );
-
-        this.defaultValue = defaultValue;
-
-        this.identifiers = [];
+        super( name, type, defaultValue, accessLevel, isStatic, x, y );
     }
 }

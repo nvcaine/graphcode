@@ -10,12 +10,12 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
         DOMHelper.removeAllChildren( this.canvas );
     }
 
-    public addParameter( parameterData: PropertyData ) {
+    public addParameter( parameterData: ParameterData ) {
 
         this.renderParameter( parameterData );
     }
 
-    public addVariable( variableData: PropertyData ) {
+    public addVariable( variableData: VariableData ) {
 
         this.renderVariable( variableData );
     }
@@ -34,7 +34,7 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
      * Create the element and append it to the canvas.
      * @param parameterData 
      */
-    private renderParameter( parameterData: PropertyData ) {
+    private renderParameter( parameterData: ParameterData ) {
 
         let parameterContainer: HTMLDivElement = DOMHelper.createDivElement( {
             position: 'absolute',
@@ -61,7 +61,7 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
      * Create the element and append it to the canvas.
      * @param variableData 
      */
-    private renderVariable( variableData: PropertyData ) {
+    private renderVariable( variableData: VariableData ) {
 
         let variableContainer: HTMLDivElement = DOMHelper.createDivElement( {
             position: 'absolute',

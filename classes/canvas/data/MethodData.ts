@@ -1,40 +1,38 @@
 class MethodData extends AbstractClassData {
 
-    private _parameters: PropertyData[];
-    private _variables: PropertyData[]
+    private _parameters: ParameterData[];
+    private _variables: VariableData[]
 
-    public get parameters(): PropertyData[] {
+    public get parameters(): ParameterData[] {
 
         return this._parameters;
     }
 
-    public get variables(): PropertyData[] {
+    public get variables(): VariableData[] {
 
         return this._variables;
     }
 
-    public addParameter( parameterName: string, x: number, y: number ): PropertyData {
+    public addParameter( parameterName: string, x: number, y: number ): ParameterData {
 
         if ( this._parameters === undefined ) {
             this._parameters = [];
         }
 
-        // ! no access level
-        let newProperty: PropertyData = new PropertyData( parameterName, '', '', AccessLevel.PUBLIC, false, x, y );
+        let newProperty: ParameterData = new ParameterData( parameterName, '', '', false, x, y );
 
         this._parameters.push( newProperty );
 
         return newProperty;
     }
 
-    public addVariable( variableName: string, x: number, y: number ): PropertyData {
+    public addVariable( variableName: string, x: number, y: number ): VariableData {
 
         if ( this._variables === undefined ) {
             this._variables = [];
         }
 
-        // ! no access level
-        let newVariable: PropertyData = new PropertyData( variableName, '', '', AccessLevel.PUBLIC, false, x, y );
+        let newVariable: VariableData = new VariableData( variableName, '', '', x, y );
 
         this._variables.push( newVariable );
 

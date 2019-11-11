@@ -79,9 +79,11 @@ class ClassData extends AbstractCanvasData {
             this._methods = [];
         }
 
+        // methods don't have default values
         let newMethod: MethodData = new MethodData(
             methodName,
             methodType,
+            null,
             accessLevel,
             isStatic,
             x, y

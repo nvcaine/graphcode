@@ -1,20 +1,30 @@
 /**
  * Unify access level property for Property and Method data objects
  */
-abstract class AbstractClassData extends AbstractCanvasData {
-
-    private type: string;
-    private isStatic: boolean;
+abstract class AbstractClassData extends VariableData {
 
     private _accessLevel: AccessLevel;
+    private _isStatic: boolean;
 
-    public constructor( name: string, type:string, accessLevel: AccessLevel, isStatic:boolean, x: number, y: number ) {
+    public constructor(
+        name: string,
+        type: string,
+        defaultValue: string,
+        accessLevel: AccessLevel,
+        isStatic: boolean,
+        x: number,
+        y: number
+    ) {
 
-        super( name, x, y );
+        super( name, type, defaultValue, x, y );
 
-        this.type = type;
         this._accessLevel = accessLevel;
-        this.isStatic = isStatic;
+        this._isStatic = isStatic;
+    }
+
+    public get isStatic(): boolean {
+
+        return this._isStatic;
     }
 
     public get accessLevel(): AccessLevel {
