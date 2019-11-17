@@ -1,7 +1,7 @@
 /**
  * Unify access level property for Property and Method data objects
  */
-abstract class AbstractClassData extends VariableData {
+abstract class AbstractClassData extends AbstractTypedData {
 
     private _accessLevel: AccessLevel;
     private _isStatic: boolean;
@@ -9,14 +9,13 @@ abstract class AbstractClassData extends VariableData {
     public constructor(
         name: string,
         type: string,
-        defaultValue: string,
         accessLevel: AccessLevel,
         isStatic: boolean,
         x: number,
         y: number
     ) {
 
-        super( name, type, defaultValue, x, y );
+        super( name, type, x, y );
 
         this._accessLevel = accessLevel;
         this._isStatic = isStatic;

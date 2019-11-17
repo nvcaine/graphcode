@@ -72,7 +72,7 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
             left: variableData.x + 'px'
         } );
 
-        variableContainer.innerText = variableData.name;
+        variableContainer.innerText = this.getVariableLabel( variableData );
         variableContainer.draggable = true;
         variableContainer.ondragstart = this.onDragStart.bind( this );
         variableContainer.ondragend = this.dropProperty.bind( this, variableData );
@@ -84,11 +84,28 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
     }
 
     /**
+     * Get the label for a variable renderer
+     * @param variableData 
+     * @returns name :type? = defaultValue?;
+     */
+    private getVariableLabel( variableData: VariableData ): string {
+
+        let result: string = variableData.name;
+
+        if ( variableData.type )
+            result += ': ' + variableData.type;
+
+        if ( variableData.defaultValue )
+            result += ' = ' + variableData.defaultValue;
+
+        return result;
+    }
+    /**
      * Create an identifier and connector for the specified property and render it.
      * Add the identifier object to the property data.
      * @param propertyData 
      */
-    private addIdentifier( propertyData: PropertyData ) {
+    private addIdentifier( propertyData: VariableData ) {
 
         let identifierData: IdentifierData = new IdentifierData( propertyData ),
             coords: any = this.getConnectorBounds( identifierData );
@@ -152,7 +169,7 @@ class MethodCanvasAPI extends AbstractCanvasAPI {
      * @param propertyData
      * @param event 
      */
-    private dropProperty( propertyData: PropertyData, event: DragEvent ) {
+    private dropProperty( propertyData: VariableData, event: DragEvent ) {
 
         this.dropElement( propertyData, event );
 

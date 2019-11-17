@@ -1,9 +1,5 @@
-class VariableData extends AbstractCanvasData {
+class VariableData extends AbstractDefaultValueData {
 
-    private _type: string;
-    private _defaultValue: string;
-
-    // !! methods and properties don't have identifiers
     public identifiers: IdentifierData[];
 
     public constructor(
@@ -14,21 +10,8 @@ class VariableData extends AbstractCanvasData {
         y: number
     ) {
 
-        super( name, x, y );
-
-        this._type = type;
-        this._defaultValue = defaultValue;
+        super( name, type, defaultValue, x, y );
 
         this.identifiers = [];
-    }
-
-    public get type(): string {
-
-        return this._type;
-    }
-
-    public get defaultValue(): string {
-
-        return this._defaultValue;
     }
 }

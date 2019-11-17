@@ -6,7 +6,8 @@ class MethodInterface extends AbstractInterface {
 
         this.initInterfaceButton( InterfaceButtons.INTERFACE_CLASS_BACK, this.backClassClickHandler, messenger );
         this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_METHOD_PARAMETER, this.addMethodParameter, messenger );
-        this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_METHOD_VARIABLE, this.addMethodVariable, messenger );
+        // this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_METHOD_VARIABLE, this.addMethodVariable, messenger );
+        this.initInterfaceButton( 'submit-new-variable', this.addMethodVariable, messenger );
 
         this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_METHOD_ASSIGN, this.addMethodAssign, messenger );
         this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_METHOD_RETURN, this.addMethodReturn, messenger );
@@ -34,10 +35,13 @@ class MethodInterface extends AbstractInterface {
 
     private addMethodVariable( messenger: SimpleMessenger ) {
 
-        let variableName: string = this.validatedPrompt( 'Enter variable name', 'localVariable' );
+        let variableName: string = ( <HTMLInputElement> DOMHelper.getElementById( 'new-variable-name' ) ).value,
+            variableType: string = ( <HTMLInputElement> DOMHelper.getElementById( 'new-variable-type' ) ).value,
+            defaultValue: string = ( <HTMLInputElement> DOMHelper.getElementById( 'new-variable-value' ) ).value
+
 
         if ( variableName )
-            messenger.sendMessage( Messages.ADD_METHOD_VARIABLE, variableName );
+            messenger.sendMessage( Messages.ADD_METHOD_VARIABLE, variableName, variableType, defaultValue );
     }
 
     private addMethodAssign( messenger: SimpleMessenger ) {

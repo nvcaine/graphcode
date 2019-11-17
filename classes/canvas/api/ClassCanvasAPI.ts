@@ -71,10 +71,19 @@ class ClassCanvasAPI extends AbstractCanvasAPI {
         let styleObject: any = this.getStyleObject( memberData, customStyle ),
             result: HTMLDivElement = DOMHelper.createDivElement( styleObject );
 
-        result.innerText = memberData.name;
+        result.innerText = this.getMemberLabel( memberData );
         result.draggable = true;
         result.ondragstart = this.onDragStart.bind( this );
         result.ondragend = this.dropElement.bind( this, memberData );
+
+        return result;
+    }
+
+    private getMemberLabel( memberData: AbstractClassData ): string {
+        let result: string = memberData.name;
+
+        if ( memberData.type )
+            result += ': ' + memberData.type;
 
         return result;
     }

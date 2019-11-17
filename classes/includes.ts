@@ -14,6 +14,8 @@
 /// <reference path="./canvas/api/MethodCanvasAPI.ts" />
 
 /// <reference path='./canvas/data/AbstractCanvasData.ts' />
+/// <reference path='./canvas/data/AbstractTypedData.ts' />
+/// <reference path='./canvas/data/AbstractDefaultValueData.ts' />
 /// <reference path='./canvas/data/VariableData.ts' />
 /// <reference path='./canvas/data/AbstractClassData.ts' />
 /// <reference path="./canvas/data/ClassData.ts" />

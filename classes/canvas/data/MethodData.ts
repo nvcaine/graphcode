@@ -19,20 +19,20 @@ class MethodData extends AbstractClassData {
             this._parameters = [];
         }
 
-        let newProperty: ParameterData = new ParameterData( parameterName, '', '', false, x, y );
+        let newParameter: ParameterData = new ParameterData( parameterName, '', '', false, x, y );
 
-        this._parameters.push( newProperty );
+        this._parameters.push( newParameter );
 
-        return newProperty;
+        return newParameter;
     }
 
-    public addVariable( variableName: string, x: number, y: number ): VariableData {
+    public addVariable( variableName: string, variableType: string, defaultValue: string, x: number, y: number ): VariableData {
 
         if ( this._variables === undefined ) {
             this._variables = [];
         }
 
-        let newVariable: VariableData = new VariableData( variableName, '', '', x, y );
+        let newVariable: VariableData = new VariableData( variableName, variableType, defaultValue, x, y );
 
         this._variables.push( newVariable );
 
