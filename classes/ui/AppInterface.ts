@@ -6,7 +6,7 @@ class AppInterface extends AbstractInterface {
 
         /*InterfaceButtons.INTERFACE_ADD_CLASS*/
         this.initInterfaceButton( 'submit-new-class', this.addClassClickHandler, messenger );
-
+        this.initInterfaceButton( 'interface-load-app', this.loadAppDataClickHandler, messenger );
     }
 
     private addClassClickHandler( messenger: SimpleMessenger ) {
@@ -16,5 +16,9 @@ class AppInterface extends AbstractInterface {
 
         if ( newClassName )
             messenger.sendMessage( Messages.ADD_CLASS, newClassName, isAbstractClass );
+    }
+
+    private loadAppDataClickHandler( messenger: SimpleMessenger ) {
+        messenger.sendMessage( Messages.LOAD_APP );
     }
 }

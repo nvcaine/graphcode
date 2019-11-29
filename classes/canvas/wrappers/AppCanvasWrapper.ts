@@ -15,6 +15,7 @@ class AppCanvasWrapper extends AbstractCanvasWrapper<AppCanvasAPI> {
     private initMessages( messenger: SimpleMessenger ) {
 
         messenger.onMessage( Messages.ADD_CLASS, this.addClass.bind( this ) );
+        messenger.onMessage( Messages.LOAD_APP, this.loadApp.bind( this ) );
     }
 
     private addClass( className: string, isAbstract: boolean ) {
@@ -23,6 +24,12 @@ class AppCanvasWrapper extends AbstractCanvasWrapper<AppCanvasAPI> {
             classData: ClassData = classDataProxy.addClass( className, isAbstract, 100, 100 );
 
         this.api.addClass( classData );
+    }
+
+    private loadApp() {
+        let loader: Loader = new Loader( this.api );
+
+        loader.loadFile( 'any.json' );
     }
 
 }

@@ -11,4 +11,6 @@ class Messages {
     public static readonly CLOSE_METHOD: string = 'close-method';
     public static readonly ADD_METHOD_PARAMETER: string = 'add-method-parameter';
     public static readonly ADD_METHOD_VARIABLE: string = 'add-method-variable';
+
+    public static readonly LOAD_APP: string = 'load-app';
 }
