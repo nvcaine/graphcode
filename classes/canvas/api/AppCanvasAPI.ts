@@ -22,7 +22,7 @@ class AppCanvasAPI extends AbstractCanvasAPI {
             left: classData.x + 'px'
         } );
 
-        classContainer.innerText = classData.name;
+        classContainer.innerText = this.getClassName( classData );
         classContainer.draggable = true;
         classContainer.ondragstart = this.onDragStart.bind( this );
         classContainer.ondragend = this.dropElement.bind( this, classData );
@@ -41,5 +41,15 @@ class AppCanvasAPI extends AbstractCanvasAPI {
         let messagingManager: MessagingManager = MessagingManager.getInstance();
 
         messagingManager.sendMessage( Messages.OPEN_CLASS, classData );
+    }
+
+    private getClassName( classData: ClassData ): string {
+
+        let result: string = classData.name;
+
+        if ( classData.isAbstract )
+            result = '[Abstract]' + classData.name;
+
+        return result;
     }
 }

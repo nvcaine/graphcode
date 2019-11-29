@@ -1,26 +1,21 @@
-class PropertyData extends AbstractClassData {
+abstract class AbstractDefaultValueData extends AbstractTypedData {
 
-    // !duplicate
     private _defaultValue: string;
 
-    public constructor(
+    protected constructor(
         name: string,
         type: string,
         defaultValue: string,
-        accessLevel: AccessLevel,
-        isStatic: boolean,
         x: number,
         y: number
     ) {
 
-        super( name, type, accessLevel, isStatic, x, y );
+        super( name, type, x, y );
 
         this._defaultValue = defaultValue;
     }
 
-    // !!duplicate
     public get defaultValue(): string {
-
         return this._defaultValue;
     }
 }

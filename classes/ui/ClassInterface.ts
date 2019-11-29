@@ -5,9 +5,8 @@ class ClassInterface extends AbstractInterface {
         this.interfaceContainer = <HTMLDivElement> DOMHelper.getElementById( DOMContainers.CLASS_INTERFACE );
 
         this.initInterfaceButton( InterfaceButtons.INTERFACE_BACK, this.backClickHandler, messenger );
-
-        this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_CLASS_PROPERTY, this.addPropertyClickHandler, messenger );
-        this.initInterfaceButton( InterfaceButtons.INTERFACE_ADD_CLASS_METHOD, this.addMethodClickHandler, messenger );
+        this.initInterfaceButton( 'submit-new-property', this.addPropertyClickHandler, messenger );
+        this.initInterfaceButton( 'submit-new-method', this.addMethodClickHandler, messenger );
     }
 
     public renderClass( classData: ClassData ) {
@@ -24,17 +23,35 @@ class ClassInterface extends AbstractInterface {
 
     private addPropertyClickHandler( messenger: SimpleMessenger ) {
 
-        let propertyName: string = this.validatedPrompt( 'Enter property name', 'newProperty' );
+        let propertyName: string = ( <HTMLInputElement> DOMHelper.getElementById( 'new-property-name' ) ).value,
+            propertyType: string = ( <HTMLInputElement> DOMHelper.getElementById( 'new-property-type' ) ).value,
+            defaultValue: string = ( <HTMLInputElement> DOMHelper.getElementById( 'new-property-value' ) ).value,
+            isStatic: boolean = ( <HTMLInputElement> DOMHelper.getElementById( 'new-property-static' ) ).checked,
+            accessLevel: AccessLevel = this.getMemberAccessLevel('property');
 
         if ( propertyName )
-            messenger.sendMessage( Messages.ADD_CLASS_PROPERTY, propertyName );
+            messenger.sendMessage( Messages.ADD_CLASS_PROPERTY, propertyName, propertyType, defaultValue, accessLevel, isStatic );
     }
 
     private addMethodClickHandler( messenger: SimpleMessenger ) {
 
-        let methodName: string = this.validatedPrompt( 'Enter method name', 'newMethod' );
+        let methodName: string = ( <HTMLInputElement> DOMHelper.getElementById( 'new-method-name' ) ).value,
+            methodType: string = ( <HTMLInputElement> DOMHelper.getElementById( 'new-method-type' ) ).value,
+            isStatic: boolean = ( <HTMLInputElement> DOMHelper.getElementById( 'new-method-static' ) ).checked,
+            accessLevel: AccessLevel = this.getMemberAccessLevel('method');
 
         if ( methodName )
-            messenger.sendMessage( Messages.ADD_CLASS_METHOD, methodName );
+            messenger.sendMessage( Messages.ADD_CLASS_METHOD, methodName, methodType, accessLevel, isStatic );
+    }
+
+    private getMemberAccessLevel( memberType: string ): AccessLevel {
+
+        if ( ( <HTMLInputElement> DOMHelper.getElementById( 'new-' + memberType + '-public' ) ).checked )
+            return AccessLevel.PUBLIC;
+
+        if ( ( <HTMLInputElement> DOMHelper.getElementById( 'new-' + memberType + '-protected' ) ).checked )
+            return AccessLevel.PROTECTED;
+
+        return AccessLevel.PRIVATE;
     }
 }

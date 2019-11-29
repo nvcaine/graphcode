@@ -21,9 +21,9 @@ class ClassDataProxy {
     }
 
     // post
-    public addClass( className: string, x: number, y: number ): ClassData {
+    public addClass( className: string, isAbstract:boolean, x: number, y: number ): ClassData {
 
-        let classData: ClassData = new ClassData( className, x, y );
+        let classData: ClassData = new ClassData( className, isAbstract, x, y );
 
         this.classes.push( classData );
 

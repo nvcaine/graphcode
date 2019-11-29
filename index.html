@@ -1,25 +1,27 @@
 <html>
-    <head></head>
+    <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    </head>
 
     <body>
 
         <div id="interface-wrapper">
             <div id="app-interface">
-                <button id="interface-add-class">Add class</button>
+                <button id="interface-add-class" data-toggle="modal" data-target="#new-class-modal">Add class</button>
             </div>
 
             <div id="class-interface">
                 <button id="interface-back">Back</button>
                 <span id="interface-class-name"></span>
-                <button id="interface-class-add-property">Add property</button>
-                <button id="interface-class-add-method">Add method</button>
+                <button id="interface-class-add-property" data-toggle="modal" data-target="#new-property-modal">Add property</button>
+                <button id="interface-class-add-method" data-toggle="modal" data-target="#new-method-modal">Add method</button>
             </div>
 
             <div id="method-interface">
                 <button id="interface-class-back">Back</button>
                 <span id="interface-method-name"></span>
                 <button id="interface-add-method-parameter">Add parameter</button>
-                <button id="interface-add-method-variable">Add local variable</button>
+                <button id="interface-add-method-variable" data-toggle="modal" data-target="#new-variable-modal">Add local variable</button>
                 <button id="interface-add-method-assign">Add assignment</button>
                 <button id="interface-add-method-return">Add return</button>
             </div>
@@ -30,7 +32,165 @@
             <div id="class-canvas"></div>
             <div id="method-canvas"></div>
         </div>
+
+        <div id="modals-container">
+            <div id="new-class-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="class-modal-label" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div id="class-modal-label" class="modal-title">Add new class</div>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="input-group">
+                                <input type="text" id="new-class-name" class="form-control" placeholder="NewClass" />
+                            </div>
+                            <div class="form-group form-check">
+                                <input id="new-class-abstract" type="checkbox" class="form-check-input" />
+                                <label for="new-class-abstract" class="form-check-label">Abstract</label>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" id="submit-new-class" class="btn btn-primary">Add class</button>
+                        </div>
+                    </div> <!-- .modal-content -->
+                </div> <!-- .modal-dialog -->
+            </div> <!-- #new-class-dialog -->
+
+
+            <div id="new-property-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="property-modal-label" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div id="property-modal-label" class="modal-title">Add new property</div>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="input-group">
+                                <input type="text" id="new-property-name" class="form-control" placeholder="newProperty" />
+                            </div>
+                            <div class="input-group">
+                                <input type="text" id="new-property-type" class="form-control" placeholder="Property type" />
+                            </div>
+                            <div class="input-group">
+                                <input type="text" id="new-property-value" class="form-control" placeholder="Default value" />
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="radio" id="new-property-public" class="form-check-input" value="public" name="property-access-level" />
+                                <label class="form-check-label" for="new-property-public">Public</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="radio" id="new-property-protected" class="form-check-input" value="protected" name="property-access-level" />
+                                <label class="form-check-label" for="new-property-protected">Protected</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="radio" id="new-property-private" class="form-check-input" value="private" name="property-access-level" checked />
+                                <label class="form-check-label" for="new-property-private">Private</label>
+                            </div>
+    
+                            <div class="form-group form-check">
+                                <input id="new-property-static" type="checkbox" class="form-check-input" />
+                                <label for="new-property-static" class="form-check-label">Static</label>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" id="submit-new-property" class="btn btn-primary">Add property</button>
+                        </div>
+                    </div> <!-- .modal-content -->
+                </div> <!-- .modal-dialog -->
+            </div> <!-- #new-property-dialog -->
+
+            <div id="new-method-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="method-modal-label" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div id="method-modal-label" class="modal-title">Add new method</div>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="input-group">
+                                <input type="text" id="new-method-name" class="form-control" placeholder="newMethod" />
+                            </div>
+                            <div class="input-group">
+                                <input type="text" id="new-method-type" class="form-control" placeholder="Return type" />
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="radio" id="new-method-public" class="form-check-input" value="public" name="method-access-level" />
+                                <label class="form-check-label" for="new-method-public">Public</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="radio" id="new-method-protected" class="form-check-input" value="protected" name="method-access-level" />
+                                <label class="form-check-label" for="new-method-protected">Protected</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="radio" id="new-method-private" class="form-check-input" value="private" name="method-access-level" checked />
+                                <label class="form-check-label" for="new-method-private">Private</label>
+                            </div>
+    
+                            <div class="form-group form-check">
+                                <input id="new-method-static" type="checkbox" class="form-check-input" />
+                                <label for="new-method-static" class="form-check-label">Static</label>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" id="submit-new-method" class="btn btn-primary">Add method</button>
+                        </div>
+                    </div> <!-- .modal-content -->
+                </div> <!-- .modal-dialog -->
+            </div> <!-- #new-property-dialog -->
+
+            <div id="new-variable-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="variable-modal-label" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div id="variable-modal-label" class="modal-title">Add new variable</div>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="input-group">
+                                <input type="text" id="new-variable-name" class="form-control" placeholder="newVariable" />
+                            </div>
+                            <div class="input-group">
+                                <input type="text" id="new-variable-type" class="form-control" placeholder="Variable type" />
+                            </div>
+                            <div class="input-group">
+                                <input type="text" id="new-variable-value" class="form-control" placeholder="Default value" />
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" id="submit-new-variable" class="btn btn-primary">Add variable</button>
+                        </div>
+                    </div> <!-- .modal-content -->
+                </div> <!-- .modal-dialog -->
+            </div> <!-- #new-variable-dialog -->
+
+
+        </div> <!-- #modals-container -->
     </body>
 
     <script src="build/app.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 </html>

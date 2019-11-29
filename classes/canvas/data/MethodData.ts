@@ -1,47 +1,38 @@
-class MethodData extends AbstractCanvasData {
+class MethodData extends AbstractClassData {
 
-    public isPrivate: boolean;
+    private _parameters: ParameterData[];
+    private _variables: VariableData[]
 
-    private _parameters: PropertyData[];
-    private _variables: PropertyData[]
-
-    public constructor( name: string, x: number, y: number, isPrivate: boolean = false ) {
-
-        super( name, x, y );
-
-        this.isPrivate = isPrivate;
-    }
-
-    public get parameters(): PropertyData[] {
+    public get parameters(): ParameterData[] {
 
         return this._parameters;
     }
 
-    public get variables(): PropertyData[] {
+    public get variables(): VariableData[] {
 
         return this._variables;
     }
 
-    public addParameter( parameterName: string, x: number, y: number ): PropertyData {
+    public addParameter( parameterName: string, x: number, y: number ): ParameterData {
 
         if ( this._parameters === undefined ) {
             this._parameters = [];
         }
 
-        let newProperty: PropertyData = new PropertyData( parameterName, x, y );
+        let newParameter: ParameterData = new ParameterData( parameterName, '', '', false, x, y );
 
-        this._parameters.push( newProperty );
+        this._parameters.push( newParameter );
 
-        return newProperty;
+        return newParameter;
     }
 
-    public addVariable( variableName: string, x: number, y: number ): PropertyData {
+    public addVariable( variableName: string, variableType: string, defaultValue: string, x: number, y: number ): VariableData {
 
         if ( this._variables === undefined ) {
             this._variables = [];
         }
 
-        let newVariable: PropertyData = new PropertyData( variableName, x, y );
+        let newVariable: VariableData = new VariableData( variableName, variableType, defaultValue, x, y );
 
         this._variables.push( newVariable );
 

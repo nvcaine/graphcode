@@ -2,16 +2,16 @@ class IdentifierData extends AbstractCanvasData {
 
     public connectorElement: SVGElement;
 
-    private _parent: PropertyData;
+    private _parent: VariableData;
 
-    public constructor( parent: PropertyData ) {
+    public constructor( parent: VariableData ) {
 
         super( '[I] ' + parent.name, parent.x + 200, parent.y );
 
         this._parent = parent;
     }
 
-    public get parent(): PropertyData {
+    public get parent(): VariableData {
 
         return this._parent;
     }

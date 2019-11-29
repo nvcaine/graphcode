@@ -34,16 +34,23 @@ class ClassCanvasWrapper extends AbstractCanvasWrapper<ClassCanvasAPI> {
         this.api.closeClass();
     }
 
-    private addClassProperty( propertyName: any ) {
+    private addClassProperty( propertyName: string, propertyType: string, defaultValue: string, accessLevel: AccessLevel, isStatic: boolean ) {
 
-        let newProperty: PropertyData = this.currentClass.addProperty( propertyName, 100, 100 );
+        let newProperty: PropertyData = this.currentClass.addProperty(
+            propertyName,
+            propertyType,
+            defaultValue,
+            accessLevel,
+            isStatic,
+            100, 100
+        );
 
         this.api.addProperty( newProperty );
     }
 
-    private addClassMethod( methodName: any ) {
+    private addClassMethod( methodName: string, methodType: string, accessLevel: AccessLevel, isStatic: boolean ) {
 
-        let newMethod: MethodData = this.currentClass.addMethod( methodName, 100, 100 );
+        let newMethod: MethodData = this.currentClass.addMethod( methodName, methodType, accessLevel, isStatic, 100, 100 );
 
         this.api.addMethod( newMethod );
     }
